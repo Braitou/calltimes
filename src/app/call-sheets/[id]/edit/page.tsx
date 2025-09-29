@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { useAutoSave } from '@/hooks/useAutoSave'
 import { validateTime, formatTime } from '@/lib/validations/schedule'
 import { LogoUpload } from '@/components/ui/logo-upload'
+import { PDFGenerator } from '@/components/ui/pdf-generator'
 
 // Mock data pour le développement
 const mockCallSheet = {
@@ -150,8 +151,8 @@ function EditorSidebar({
             onRemoveTeamMember={onRemoveTeamMember}
             onMoveTeamMember={(index, direction) => moveTeamMember(index, direction)}
           />
-        )}
-        {activeSection === 'parametres' && <ParametresSection />}
+         )}
+         {activeSection === 'parametres' && <ParametresSection callSheet={callSheet} />}
       </div>
     </div>
   )
@@ -882,7 +883,7 @@ function EquipeSection({
   )
 }
 
-function ParametresSection() {
+function ParametresSection({ callSheet }: { callSheet: typeof mockCallSheet }) {
   return (
     <div>
       <div className="mb-6 pb-3 border-b-2 border-orange-500">
@@ -891,34 +892,64 @@ function ParametresSection() {
         </h3>
       </div>
       
-      <div className="bg-call-times-gray-light border border-call-times-gray-medium rounded p-4 mb-6">
-        <p className="text-call-times-text-muted text-xs leading-relaxed">
-          Les options de personnalisation avancées seront bientôt disponibles
-        </p>
+      {/* Section Génération PDF */}
+      <div className="mb-6">
+        <label className="block text-call-times-text-secondary text-sm font-medium uppercase tracking-wider mb-3">
+          📄 Génération PDF
+        </label>
+        <div className="bg-call-times-gray-light border border-call-times-gray-medium rounded-lg p-4">
+          <p className="text-call-times-text-muted text-xs mb-4 leading-relaxed">
+            Générez un PDF professionnel de votre Call Sheet avec la même mise en page que l'aperçu.
+          </p>
+          <PDFGenerator 
+            callSheetId={callSheet.id}
+            callSheetTitle={callSheet.title}
+          />
+        </div>
       </div>
       
+      {/* Section Thèmes (désactivée pour l'instant) */}
+      <div className="mb-6">
+        <label className="block text-call-times-text-secondary text-sm font-medium uppercase tracking-wider mb-2">
+          🎨 Thèmes personnalisés
+        </label>
+        <div className="bg-call-times-gray-light border border-call-times-gray-medium rounded-lg p-4">
+          <p className="text-call-times-text-muted text-xs mb-3 leading-relaxed">
+            Les options de personnalisation avancées seront bientôt disponibles.
+          </p>
+          <select 
+            disabled
+            className="w-full bg-call-times-gray-medium border border-call-times-gray-light rounded p-3 text-call-times-text-disabled cursor-not-allowed"
+          >
+            <option>Thème par défaut</option>
+          </select>
+        </div>
+      </div>
+      
+      {/* Section Email (placeholder) */}
       <div>
         <label className="block text-call-times-text-secondary text-sm font-medium uppercase tracking-wider mb-2">
-          Thèmes personnalisés
+          📧 Envoi par email
         </label>
-        <select 
-          disabled
-          className="w-full bg-call-times-gray-medium border border-call-times-gray-light rounded p-3 text-call-times-text-disabled cursor-not-allowed"
-        >
-          <option>Bientôt disponible</option>
-        </select>
+        <div className="bg-call-times-gray-light border border-call-times-gray-medium rounded-lg p-4">
+          <p className="text-call-times-text-muted text-xs mb-3 leading-relaxed">
+            Envoyez votre Call Sheet par email à toute l'équipe. Disponible prochainement.
+          </p>
+          <Button 
+            disabled
+            variant="outline"
+            size="sm"
+            className="border-call-times-gray-medium text-call-times-text-disabled cursor-not-allowed"
+          >
+            📤 Envoyer par email
+          </Button>
+        </div>
       </div>
     </div>
   )
 }
 
 function PreviewArea({ callSheet }: { callSheet: typeof mockCallSheet }) {
-  // Debug logs pour les logos
-  console.log('🖼️ Preview logos:', {
-    production: callSheet.logo_production_url,
-    marque: callSheet.logo_marque_url,
-    agence: callSheet.logo_agence_url
-  })
   
   return (
     <div className="flex-1 bg-call-times-black flex flex-col">
@@ -948,8 +979,6 @@ function PreviewArea({ callSheet }: { callSheet: typeof mockCallSheet }) {
                   src={callSheet.logo_production_url}
                   alt="Logo Production"
                   className="h-8 w-auto object-contain"
-                  onLoad={() => console.log('✅ Logo Production loaded:', callSheet.logo_production_url)}
-                  onError={() => console.log('❌ Logo Production error:', callSheet.logo_production_url)}
                 />
               )}
             </div>
@@ -961,8 +990,6 @@ function PreviewArea({ callSheet }: { callSheet: typeof mockCallSheet }) {
                   src={callSheet.logo_agence_url}
                   alt="Logo Agence"
                   className="h-8 w-auto object-contain"
-                  onLoad={() => console.log('✅ Logo Agence loaded:', callSheet.logo_agence_url)}
-                  onError={() => console.log('❌ Logo Agence error:', callSheet.logo_agence_url)}
                 />
               )}
             </div>
@@ -977,8 +1004,6 @@ function PreviewArea({ callSheet }: { callSheet: typeof mockCallSheet }) {
                   src={callSheet.logo_marque_url}
                   alt="Logo Marque"
                   className="h-10 w-auto object-contain mx-auto"
-                  onLoad={() => console.log('✅ Logo Marque loaded:', callSheet.logo_marque_url)}
-                  onError={() => console.log('❌ Logo Marque error:', callSheet.logo_marque_url)}
                 />
               </div>
             )}
@@ -1128,7 +1153,7 @@ export default function CallSheetEditorPage() {
   const mockSave = async (data: typeof mockCallSheet) => {
     // Simuler un délai de sauvegarde
     await new Promise(resolve => setTimeout(resolve, 800))
-    console.log('📄 Auto-save:', data.title, new Date().toLocaleTimeString())
+    // Auto-save silencieux
   }
 
   const { status: saveStatus, lastSaved, save: forceSave, error: saveError } = useAutoSave({
@@ -1140,12 +1165,7 @@ export default function CallSheetEditorPage() {
 
   // Handler pour mettre à jour les données en temps réel
   const updateCallSheet = (updates: Partial<typeof mockCallSheet>) => {
-    console.log('🔄 Updating call sheet:', updates)
-    setCallSheet(prev => {
-      const newState = { ...prev, ...updates }
-      console.log('📊 New call sheet state:', newState)
-      return newState
-    })
+    setCallSheet(prev => ({ ...prev, ...updates }))
   }
 
   const updateScheduleItem = (index: number, updates: Partial<typeof mockCallSheet.schedule[0]>) => {

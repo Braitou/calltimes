@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { createSupabaseClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 
 interface LogoUploadProps {
   currentLogoUrl?: string | null
@@ -22,7 +22,6 @@ export function LogoUpload({
   const [isUploading, setIsUploading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentLogoUrl || null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const supabase = createSupabaseClient()
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
