@@ -9,6 +9,7 @@ import { useAutoSave } from '@/hooks/useAutoSave'
 import { validateTime, formatTime } from '@/lib/validations/schedule'
 import { LogoUpload } from '@/components/ui/logo-upload'
 import { PDFGenerator } from '@/components/ui/pdf-generator'
+import { ContactSelectorModal, type Contact } from '@/components/contacts/contact-selector-modal'
 import { Mail } from 'lucide-react'
 
 // Mock data pour le développement
@@ -73,6 +74,7 @@ interface EditorSidebarProps {
   onAddTeamMember: () => void
   onUpdateTeamMember: (index: number, updates: Partial<typeof mockCallSheet.team[0]>) => void
   onRemoveTeamMember: (index: number) => void
+  onOpenContactSelector: (mode: 'important' | 'team') => void
 }
 
 function EditorSidebar({ 
@@ -89,7 +91,8 @@ function EditorSidebar({
   onRemoveImportantContact,
   onAddTeamMember,
   onUpdateTeamMember,
-  onRemoveTeamMember
+  onRemoveTeamMember,
+  onOpenContactSelector
 }: EditorSidebarProps) {
   const sections = [
     { id: 'informations' as Section, label: 'Informations', color: 'blue' },
@@ -133,6 +136,7 @@ function EditorSidebar({
             onAddImportantContact={onAddImportantContact}
             onUpdateImportantContact={onUpdateImportantContact}
             onRemoveImportantContact={onRemoveImportantContact}
+            onOpenContactSelector={onOpenContactSelector}
           />
         )}
         {activeSection === 'planning' && (
@@ -151,6 +155,7 @@ function EditorSidebar({
             onUpdateTeamMember={onUpdateTeamMember}
             onRemoveTeamMember={onRemoveTeamMember}
             onMoveTeamMember={(index, direction) => moveTeamMember(index, direction)}
+            onOpenContactSelector={onOpenContactSelector}
           />
          )}
          {activeSection === 'parametres' && <ParametresSection callSheet={callSheet} />}
@@ -187,7 +192,8 @@ function InformationsSection({
   onRemoveLocation,
   onAddImportantContact,
   onUpdateImportantContact,
-  onRemoveImportantContact
+  onRemoveImportantContact,
+  onOpenContactSelector
 }: { 
   callSheet: typeof mockCallSheet
   onUpdate: (updates: Partial<typeof mockCallSheet>) => void
@@ -197,6 +203,7 @@ function InformationsSection({
   onAddImportantContact: () => void
   onUpdateImportantContact: (index: number, updates: Partial<typeof mockCallSheet.important_contacts[0]>) => void
   onRemoveImportantContact: (index: number) => void
+  onOpenContactSelector: (mode: 'important' | 'team') => void
 }) {
   return (
     <div>
@@ -307,7 +314,7 @@ function InformationsSection({
                        size="sm"
                        variant="outline"
                        className="border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white text-xs"
-                       onClick={() => window.open('/contacts', '_blank')}
+                       onClick={() => onOpenContactSelector('important')}
                      >
                        📇 Répertoire
                      </Button>
@@ -652,13 +659,15 @@ function EquipeSection({
   onAddTeamMember, 
   onUpdateTeamMember, 
   onRemoveTeamMember,
-  onMoveTeamMember 
+  onMoveTeamMember,
+  onOpenContactSelector 
 }: { 
   callSheet: typeof mockCallSheet
   onAddTeamMember: () => void
   onUpdateTeamMember: (index: number, updates: Partial<typeof mockCallSheet.team[0]>) => void
   onRemoveTeamMember: (index: number) => void
   onMoveTeamMember: (index: number, direction: 'up' | 'down') => void
+  onOpenContactSelector: (mode: 'important' | 'team') => void
 }) {
   const departments = ['Production', 'Régie', 'Camera', 'Réalisation', 'HMC', 'Son', 'Maquillage', 'Costumes', 'Autre'] as const
   
@@ -729,7 +738,7 @@ function EquipeSection({
             size="sm"
             variant="outline"
             className="border-green-500 text-green-400 hover:bg-green-500 hover:text-white text-xs"
-            onClick={() => window.open('/contacts', '_blank')}
+            onClick={() => onOpenContactSelector('team')}
           >
             📇 Depuis répertoire
           </Button>
@@ -1091,35 +1100,68 @@ function PreviewArea({ callSheet }: { callSheet: typeof mockCallSheet }) {
                 <div className="text-xs text-gray-600 uppercase font-bold mb-2 text-center">
                   CREW CALL
                 </div>
-                <div className="grid grid-cols-5 gap-2 text-xs font-bold border-b-2 border-gray-400 pb-1 mb-1">
+                <div className="grid grid-cols-4 gap-2 text-xs font-bold border-b-2 border-gray-400 pb-1 mb-1 px-3">
                   <div>POSITION</div>
                   <div>NAME</div>
                   <div>TEL</div>
-                  <div>CALL</div>
-                  <div>ON SET</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>CALL</div>
+                    <div>ON SET</div>
+                  </div>
                 </div>
                 
-                {/* Tri par département et affichage */}
-                {callSheet.team
-                  .sort((a, b) => a.department.localeCompare(b.department))
-                  .map((member) => (
-                    <div key={member.id} className="grid grid-cols-5 gap-2 text-xs border-b border-gray-300 py-0.5">
-                      <div className="uppercase font-medium">{member.department.toUpperCase()}</div>
-                      <div className="font-medium">{member.name || 'Sans nom'}</div>
-                      <div className="text-gray-600">{member.phone || 'N/A'}</div>
-                      <div className="font-semibold">{member.call_time || 'N/A'}</div>
-                      <div className="text-blue-600 font-semibold">{member.on_set_time || 'N/A'}</div>
-                    </div>
-                  ))}
+                {/* Groupement par département */}
+                {(() => {
+                  // Grouper par département
+                  const membersByDept = callSheet.team.reduce((acc, member) => {
+                    const dept = member.department || 'Autre'
+                    if (!acc[dept]) acc[dept] = []
+                    acc[dept].push(member)
+                    return acc
+                  }, {} as Record<string, typeof callSheet.team>)
+
+                  // Ordre des départements
+                  const deptOrder = ['Production', 'Réalisation', 'Image', 'Son', 'Technique', 'Maquillage', 'Coiffure', 'Costumes', 'Casting', 'Autre']
+                  
+                  return deptOrder
+                    .filter(dept => membersByDept[dept]?.length > 0)
+                    .map(dept => (
+                      <div key={dept} className="mt-3 first:mt-0">
+                        {/* Header de département - style grisé comme l'image */}
+                        <div className="bg-gray-200 text-gray-800 px-3 py-1.5 text-xs font-bold uppercase tracking-wider border-t border-gray-300">
+                          {dept}
+                        </div>
+                        {/* Membres du département - sans répétition du nom de département */}
+                        {membersByDept[dept].map((member) => (
+                          <div key={member.id} className="grid grid-cols-4 gap-2 text-xs border-b border-gray-300 py-1.5 px-3 bg-white">
+                            <div className="font-medium">{member.role || member.name}</div>
+                            <div className="font-medium">{member.name}</div>
+                            <div className="text-gray-600">{member.phone || 'N/A'}</div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="font-semibold">{member.call_time || 'N/A'}</div>
+                              <div className="text-blue-600 font-semibold">{member.on_set_time || 'N/A'}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ))
+                })()}
                 
-                {/* Ligne exemple si pas d'équipe */}
+                {/* Exemple si pas d'équipe */}
                 {callSheet.team.length === 0 && (
-                  <div className="grid grid-cols-5 gap-2 text-xs border-b border-gray-300 py-0.5">
-                    <div className="uppercase font-medium">PRODUCTION</div>
-                    <div className="font-medium">Line Producer</div>
-                    <div className="text-gray-600">+33 6 12 33 44</div>
-                    <div className="font-semibold">07:30</div>
-                    <div className="text-blue-600 font-semibold">09:30</div>
+                  <div className="mt-3">
+                    <div className="bg-gray-200 text-gray-800 px-3 py-1.5 text-xs font-bold uppercase tracking-wider border-t border-gray-300">
+                      PRODUCTION
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 text-xs border-b border-gray-300 py-1.5 px-3 bg-white">
+                      <div className="font-medium">Line Producer</div>
+                      <div className="font-medium">[Nom]</div>
+                      <div className="text-gray-600">+33 6 12 33 44</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="font-semibold">07:30</div>
+                        <div className="text-blue-600 font-semibold">09:30</div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1149,6 +1191,10 @@ export default function CallSheetEditorPage() {
   const [activeSection, setActiveSection] = useState<Section>('informations')
   const [callSheet, setCallSheet] = useState(mockCallSheet)
   const [timeErrors, setTimeErrors] = useState<{ [key: string]: string }>({})
+  
+  // États pour les modals de sélection de contacts
+  const [contactSelectorOpen, setContactSelectorOpen] = useState(false)
+  const [contactSelectorMode, setContactSelectorMode] = useState<'important' | 'team'>('important')
 
   // Auto-save avec mock function (sera remplacé par vraie API plus tard)
   const mockSave = async (data: typeof mockCallSheet) => {
@@ -1346,6 +1392,47 @@ export default function CallSheetEditorPage() {
     })
   }
 
+  // Handlers pour la sélection de contacts
+  const handleOpenContactSelector = (mode: 'important' | 'team') => {
+    setContactSelectorMode(mode)
+    setContactSelectorOpen(true)
+  }
+
+  const handleSelectContact = (contact: Contact) => {
+    if (contactSelectorMode === 'important') {
+      // Ajouter un contact important
+      const newContact = {
+        id: Date.now(),
+        name: `${contact.firstName} ${contact.lastName}`,
+        role: contact.role,
+        phone: contact.phone,
+        email: contact.email
+      }
+      setCallSheet(prev => ({
+        ...prev,
+        important_contacts: [...prev.important_contacts, newContact]
+      }))
+    } else {
+      // Ajouter un membre d'équipe
+      const newTeamMember = {
+        id: Date.now(),
+        contact_id: contact.id,
+        name: `${contact.firstName} ${contact.lastName}`,
+        role: contact.role,
+        department: contact.department as any,
+        phone: contact.phone,
+        email: contact.email,
+        call_time: '',
+        on_set_time: '',
+        order: callSheet.team.length
+      }
+      setCallSheet(prev => ({
+        ...prev,
+        team: [...prev.team, newTeamMember]
+      }))
+    }
+  }
+
   return (
     <div className="min-h-screen bg-call-times-black flex flex-col">
       {/* Header */}
@@ -1415,9 +1502,19 @@ export default function CallSheetEditorPage() {
           onAddTeamMember={addTeamMember}
           onUpdateTeamMember={updateTeamMember}
           onRemoveTeamMember={removeTeamMember}
+          onOpenContactSelector={handleOpenContactSelector}
         />
         <PreviewArea callSheet={callSheet} />
       </div>
+
+      {/* Modal de sélection de contacts */}
+      <ContactSelectorModal
+        open={contactSelectorOpen}
+        onOpenChange={setContactSelectorOpen}
+        onSelectContact={handleSelectContact}
+        title={contactSelectorMode === 'important' ? 'Sélectionner un contact important' : 'Sélectionner un membre d\'équipe'}
+        description={contactSelectorMode === 'important' ? 'Choisissez un contact important pour cette production.' : 'Choisissez un membre d\'équipe dans votre répertoire.'}
+      />
     </div>
   )
 }
