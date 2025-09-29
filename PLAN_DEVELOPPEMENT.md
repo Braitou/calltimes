@@ -102,36 +102,45 @@
 **📋 Section Informations Générales**
 - [x] Formulaire React Hook Form + Zod
 - [x] Champs : titre, date de tournage, description
-- [x] Gestion des lieux (ajout/suppression de cards)
-- [ ] Upload logo (Supabase Storage + preview)
+- [x] **Gestion des lieux avancée** : Multi-lieux avec nom + adresse + notes
+- [x] **Contacts importants** : Cards avec nom + poste + tel + email
+- [x] **Interface triple logos** : Production (gauche) + Marque (centre, plus gros) + Agence (droite)
+- [x] Notes générales
 
 **⏰ Section Planning**
 - [x] Liste des horaires (titre + heure texte libre)
+- [x] **Quick adds intelligents** : Boutons prédéfinis avec heures suggérées
+- [x] **Cards éditables complètes** : Titre ET heure modifiables
+- [x] **Tri automatique par heure** : Réorganisation temps réel
+- [x] **Validation Zod temps réel** : Format HH:MM avec messages d'erreur
+- [x] **Boutons Up/Down** : Réorganisation manuelle sans drag & drop
 - [x] Boutons Ajouter/Supprimer
-- [ ] Boutons Up/Down pour réorganiser (pas de drag & drop)
-- [ ] Validation Zod pour les horaires
 
 #### **Semaine 4 : Preview A4 & Équipe**
 
 **👥 Section Équipe**
-- [x] Table des membres d'équipe
-- [x] Champs : nom, rôle, email, téléphone, call time
-- [ ] Boutons Up/Down pour réorganiser
-- [ ] Intégration avec répertoire contacts (sélection)
-- [ ] Ajout manuel (freelances ponctuels)
+- [x] **Gestion avancée par départements** : 9 catégories avec couleurs
+- [x] **Organisation automatique** : Tri et groupement par département
+- [x] **Ajout manuel complet** : Formulaire 6 champs (nom, poste, dept, call time, tel, email)
+- [x] **Boutons répertoire fonctionnels** : Ouverture page contacts en nouvel onglet
+- [x] **Boutons Up/Down** : Réorganisation manuelle de l'équipe
+- [x] **Codes couleur professionnels** : PROD, REGIE, CAM, REAL, HMC, etc.
+- [x] Champs : nom, rôle, email, téléphone, call time, département
 
 **📄 Preview A4 Temps Réel**
-- [x] Composant `<CallSheetPreview>` 
-- [x] CSS print optimisé (marges 12mm, A4)
-- [x] Rendu temps réel des 4 sections
-- [x] Police système fixe (Inter/Arial)
+- [x] **Template professionnel final** : Header épuré avec 3 logos positionnés
+- [x] **Structure logique optimisée** : Titre → Date → Lieux → Contacts → Planning → Équipe → Notes
+- [x] **CSS print optimisé** : Marges, typographie, compacité PDF
+- [x] **Rendu temps réel complet** : Toutes sections synchronisées
+- [x] **Police système fixe** : Design épuré et professionnel
 - [x] **Synchronisation temps réel** : Preview se met à jour instantanément
+- [x] **Section CREW CALL dynamique** : Affichage équipe par département
 - [ ] Tests multi-navigateurs (Chrome, Firefox, Safari)
 
 **💾 Auto-Save**
-- [ ] Hook `useAutoSave` avec debounce 500ms
-- [ ] Sauvegarde en draft automatique
-- [ ] Indicateur de statut (sauvegardé/en cours)
+- [x] **Hook `useAutoSave` professionnel** : Debounce 500ms + gestion d'erreurs
+- [x] **Sauvegarde automatique** : Mock avec simulation délai (prêt pour vraie API)
+- [x] **Indicateur de statut dynamique** : Sauvegardé/En cours/Erreur avec couleurs
 
 **🧪 Tests Convergence**
 - [ ] Prototype PDF simple pour validation

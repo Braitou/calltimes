@@ -5,6 +5,9 @@ import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
+import { useAutoSave } from '@/hooks/useAutoSave'
+import { validateTime, formatTime } from '@/lib/validations/schedule'
+import { LogoUpload } from '@/components/ui/logo-upload'
 
 // Mock data pour le développement
 const mockCallSheet = {
@@ -29,7 +32,9 @@ const mockCallSheet = {
       email: 'jean.dupont@prod.fr'
     }
   ],
-  logo_url: null,
+  logo_production_url: null,
+  logo_marque_url: null,
+  logo_agence_url: null,
   notes: 'Tournage en studio avec équipe réduite',
   schedule: [
     { id: 1, title: 'Call time — Production', time: '08:00' },
@@ -133,6 +138,8 @@ function EditorSidebar({
             callSheet={callSheet}
             onUpdate={onUpdateCallSheet}
             onUpdateScheduleItem={onUpdateScheduleItem}
+            onMoveScheduleItem={(index, direction) => moveScheduleItem(index, direction)}
+            timeErrors={timeErrors}
           />
         )}
         {activeSection === 'equipe' && (
@@ -141,6 +148,7 @@ function EditorSidebar({
             onAddTeamMember={onAddTeamMember}
             onUpdateTeamMember={onUpdateTeamMember}
             onRemoveTeamMember={onRemoveTeamMember}
+            onMoveTeamMember={(index, direction) => moveTeamMember(index, direction)}
           />
         )}
         {activeSection === 'parametres' && <ParametresSection />}
@@ -293,13 +301,14 @@ function InformationsSection({
               >
                 + Ajouter
               </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white text-xs"
-              >
-                📇 Répertoire
-              </Button>
+                     <Button
+                       size="sm"
+                       variant="outline"
+                       className="border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white text-xs"
+                       onClick={() => window.open('/contacts', '_blank')}
+                     >
+                       📇 Répertoire
+                     </Button>
             </div>
           </div>
           
@@ -351,24 +360,59 @@ function InformationsSection({
           </div>
         </div>
 
-        {/* Logo Upload */}
-        <div>
-          <label className="block text-call-times-text-secondary text-sm font-medium uppercase tracking-wider mb-2">
-            Logo (agence/prod/marque)
-          </label>
-          <div className="border-2 border-dashed border-call-times-gray-light rounded-lg p-6 text-center">
-            <div className="text-call-times-text-muted text-sm mb-2">
-              📎 Import logo
+        {/* Logos Upload - 3 sections séparées */}
+        <div className="space-y-6">
+          <div className="border-t border-call-times-gray-light pt-6">
+            <h4 className="text-call-times-text-secondary text-sm font-medium uppercase tracking-wider mb-4 text-center">
+              Logos Call Sheet
+            </h4>
+            
+            {/* Logo Production */}
+            <div className="mb-6">
+              <label className="block text-call-times-text-secondary text-xs font-medium uppercase tracking-wider mb-2">
+                🎬 Logo Production
+              </label>
+              <LogoUpload
+                currentLogoUrl={callSheet.logo_production_url}
+                onUploadComplete={(logoUrl) => onUpdate({ logo_production_url: logoUrl })}
+                onUploadError={(error) => {
+                  console.error('Logo production upload error:', error)
+                }}
+                maxSizeMB={2}
+              />
+              <p className="text-call-times-text-disabled text-xs mt-1">Affiché en haut à gauche</p>
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-call-times-gray-light text-call-times-text-secondary hover:bg-call-times-gray-light text-xs"
-            >
-              Choisir fichier
-            </Button>
-            <div className="text-call-times-text-disabled text-xs mt-2">
-              PNG, JPG jusqu'à 2MB
+
+            {/* Logo Marque */}
+            <div className="mb-6">
+              <label className="block text-call-times-text-secondary text-xs font-medium uppercase tracking-wider mb-2">
+                🏷️ Logo Marque
+              </label>
+              <LogoUpload
+                currentLogoUrl={callSheet.logo_marque_url}
+                onUploadComplete={(logoUrl) => onUpdate({ logo_marque_url: logoUrl })}
+                onUploadError={(error) => {
+                  console.error('Logo marque upload error:', error)
+                }}
+                maxSizeMB={2}
+              />
+              <p className="text-call-times-text-disabled text-xs mt-1">Affiché au centre, au-dessus du titre (principal)</p>
+            </div>
+
+            {/* Logo Agence */}
+            <div className="mb-6">
+              <label className="block text-call-times-text-secondary text-xs font-medium uppercase tracking-wider mb-2">
+                🏢 Logo Agence
+              </label>
+              <LogoUpload
+                currentLogoUrl={callSheet.logo_agence_url}
+                onUploadComplete={(logoUrl) => onUpdate({ logo_agence_url: logoUrl })}
+                onUploadError={(error) => {
+                  console.error('Logo agence upload error:', error)
+                }}
+                maxSizeMB={2}
+              />
+              <p className="text-call-times-text-disabled text-xs mt-1">Affiché en haut à droite</p>
             </div>
           </div>
         </div>
@@ -394,11 +438,15 @@ function InformationsSection({
 function PlanningSection({ 
   callSheet, 
   onUpdate,
-  onUpdateScheduleItem 
+  onUpdateScheduleItem,
+  onMoveScheduleItem,
+  timeErrors 
 }: { 
   callSheet: typeof mockCallSheet
   onUpdate: (updates: Partial<typeof mockCallSheet>) => void
   onUpdateScheduleItem: (index: number, updates: Partial<typeof mockCallSheet.schedule[0]>) => void
+  onMoveScheduleItem: (index: number, direction: 'up' | 'down') => void
+  timeErrors: { [key: string]: string }
 }) {
   const addScheduleItem = () => {
     const newItem = {
@@ -509,22 +557,42 @@ function PlanningSection({
       <div className="space-y-3">
         {callSheet.schedule.map((item, index) => (
           <div key={item.id} className="bg-call-times-gray-medium border border-call-times-gray-light rounded-lg p-4 border-l-4 border-l-red-500">
-            <div className="flex justify-between items-center mb-3">
-              <div className="flex items-center gap-2">
-                <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
-                  #{index + 1}
-                </span>
-                <span className="text-white font-medium text-sm">
-                  {item.time ? `${item.time}` : 'Sans heure'}
-                </span>
-              </div>
-              <button
-                onClick={() => removeScheduleItem(index)}
-                className="text-red-400 hover:text-red-300 text-xs"
-              >
-                Supprimer
-              </button>
-            </div>
+                   <div className="flex justify-between items-center mb-3">
+                     <div className="flex items-center gap-2">
+                       <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
+                         #{index + 1}
+                       </span>
+                       <span className="text-white font-medium text-sm">
+                         {item.time ? `${item.time}` : 'Sans heure'}
+                       </span>
+                     </div>
+                     <div className="flex items-center gap-2">
+                       <div className="flex flex-col gap-1">
+                         <button
+                           onClick={() => onMoveScheduleItem(index, 'up')}
+                           disabled={index === 0}
+                           className="text-white hover:text-red-300 text-xs px-1 disabled:text-gray-500 disabled:cursor-not-allowed"
+                           title="Déplacer vers le haut"
+                         >
+                           ↑
+                         </button>
+                         <button
+                           onClick={() => onMoveScheduleItem(index, 'down')}
+                           disabled={index === callSheet.schedule.length - 1}
+                           className="text-white hover:text-red-300 text-xs px-1 disabled:text-gray-500 disabled:cursor-not-allowed"
+                           title="Déplacer vers le bas"
+                         >
+                           ↓
+                         </button>
+                       </div>
+                       <button
+                         onClick={() => removeScheduleItem(index)}
+                         className="text-red-400 hover:text-red-300 text-xs"
+                       >
+                         Supprimer
+                       </button>
+                     </div>
+                   </div>
             
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -543,12 +611,23 @@ function PlanningSection({
                 <label className="block text-call-times-text-secondary text-xs font-medium uppercase tracking-wider mb-1">
                   Heure
                 </label>
-                <input
-                  type="time"
-                  value={item.time}
-                  onChange={(e) => onUpdateScheduleItem(index, { time: e.target.value })}
-                  className="w-full bg-call-times-gray-light border border-call-times-gray-medium rounded p-2 text-white text-sm focus:border-red-500 outline-none"
-                />
+                <div>
+                  <input
+                    type="time"
+                    value={item.time}
+                    onChange={(e) => onUpdateScheduleItem(index, { time: e.target.value })}
+                    className={`w-full bg-call-times-gray-light border rounded p-2 text-white text-sm outline-none ${
+                      timeErrors[`schedule-${item.id}`] 
+                        ? 'border-red-500 focus:border-red-400' 
+                        : 'border-call-times-gray-medium focus:border-red-500'
+                    }`}
+                  />
+                  {timeErrors[`schedule-${item.id}`] && (
+                    <p className="text-red-400 text-xs mt-1">
+                      {timeErrors[`schedule-${item.id}`]}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -570,12 +649,14 @@ function EquipeSection({
   callSheet, 
   onAddTeamMember, 
   onUpdateTeamMember, 
-  onRemoveTeamMember 
+  onRemoveTeamMember,
+  onMoveTeamMember 
 }: { 
   callSheet: typeof mockCallSheet
   onAddTeamMember: () => void
   onUpdateTeamMember: (index: number, updates: Partial<typeof mockCallSheet.team[0]>) => void
   onRemoveTeamMember: (index: number) => void
+  onMoveTeamMember: (index: number, direction: 'up' | 'down') => void
 }) {
   const departments = ['Production', 'Régie', 'Camera', 'Réalisation', 'HMC', 'Son', 'Maquillage', 'Costumes', 'Autre'] as const
   
@@ -646,6 +727,7 @@ function EquipeSection({
             size="sm"
             variant="outline"
             className="border-green-500 text-green-400 hover:bg-green-500 hover:text-white text-xs"
+            onClick={() => window.open('/contacts', '_blank')}
           >
             📇 Depuis répertoire
           </Button>
@@ -676,12 +758,32 @@ function EquipeSection({
               <div key={member.id} className="bg-call-times-gray-light border border-call-times-gray-medium rounded m-4 p-4">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-white font-medium text-sm">Membre {member.index + 1}</span>
-                  <button
-                    onClick={() => onRemoveTeamMember(member.index)}
-                    className="text-red-400 hover:text-red-300 text-xs"
-                  >
-                    Supprimer
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-1">
+                      <button
+                        onClick={() => onMoveTeamMember(member.index, 'up')}
+                        disabled={member.index === 0}
+                        className="text-white hover:text-green-300 text-xs px-1 disabled:text-gray-500 disabled:cursor-not-allowed"
+                        title="Déplacer vers le haut"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        onClick={() => onMoveTeamMember(member.index, 'down')}
+                        disabled={member.index === callSheet.team.length - 1}
+                        className="text-white hover:text-green-300 text-xs px-1 disabled:text-gray-500 disabled:cursor-not-allowed"
+                        title="Déplacer vers le bas"
+                      >
+                        ↓
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => onRemoveTeamMember(member.index)}
+                      className="text-red-400 hover:text-red-300 text-xs"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3 mb-3">
@@ -811,6 +913,13 @@ function ParametresSection() {
 }
 
 function PreviewArea({ callSheet }: { callSheet: typeof mockCallSheet }) {
+  // Debug logs pour les logos
+  console.log('🖼️ Preview logos:', {
+    production: callSheet.logo_production_url,
+    marque: callSheet.logo_marque_url,
+    agence: callSheet.logo_agence_url
+  })
+  
   return (
     <div className="flex-1 bg-call-times-black flex flex-col">
       {/* Preview Toolbar */}
@@ -830,14 +939,50 @@ function PreviewArea({ callSheet }: { callSheet: typeof mockCallSheet }) {
       {/* Document Preview */}
       <div className="flex-1 p-8 overflow-auto flex justify-center items-start">
         <div className="bg-white shadow-2xl rounded max-w-2xl w-full min-h-[800px] p-0 text-black">
-          {/* Header professionnel */}
+          {/* Header épuré avec logos uniquement */}
           <div className="flex justify-between items-center px-5 py-4">
-            <div className="text-xs font-bold uppercase tracking-wider">VOTRE PRODUCTION</div>
-            <div className="text-xs font-bold uppercase tracking-wider">CALL SHEET</div>
+            {/* Logo Production - Gauche */}
+            <div className="flex items-center flex-1">
+              {callSheet.logo_production_url && (
+                <img
+                  src={callSheet.logo_production_url}
+                  alt="Logo Production"
+                  className="h-8 w-auto object-contain"
+                  onLoad={() => console.log('✅ Logo Production loaded:', callSheet.logo_production_url)}
+                  onError={() => console.log('❌ Logo Production error:', callSheet.logo_production_url)}
+                />
+              )}
+            </div>
+            
+            {/* Logo Agence - Droite */}
+            <div className="flex items-center flex-1 justify-end">
+              {callSheet.logo_agence_url && (
+                <img
+                  src={callSheet.logo_agence_url}
+                  alt="Logo Agence"
+                  className="h-8 w-auto object-contain"
+                  onLoad={() => console.log('✅ Logo Agence loaded:', callSheet.logo_agence_url)}
+                  onError={() => console.log('❌ Logo Agence error:', callSheet.logo_agence_url)}
+                />
+              )}
+            </div>
           </div>
 
-          {/* Titre centré */}
+          {/* Logo Marque centré + Titre */}
           <div className="text-center py-4">
+            {/* Logo Marque - 30% plus gros que les autres */}
+            {callSheet.logo_marque_url && (
+              <div className="mb-3">
+                <img
+                  src={callSheet.logo_marque_url}
+                  alt="Logo Marque"
+                  className="h-10 w-auto object-contain mx-auto"
+                  onLoad={() => console.log('✅ Logo Marque loaded:', callSheet.logo_marque_url)}
+                  onError={() => console.log('❌ Logo Marque error:', callSheet.logo_marque_url)}
+                />
+              </div>
+            )}
+            
             <h1 className="text-lg font-bold uppercase mb-1">
               {callSheet.title}
             </h1>
@@ -977,13 +1122,54 @@ export default function CallSheetEditorPage() {
   const router = useRouter()
   const [activeSection, setActiveSection] = useState<Section>('informations')
   const [callSheet, setCallSheet] = useState(mockCallSheet)
+  const [timeErrors, setTimeErrors] = useState<{ [key: string]: string }>({})
+
+  // Auto-save avec mock function (sera remplacé par vraie API plus tard)
+  const mockSave = async (data: typeof mockCallSheet) => {
+    // Simuler un délai de sauvegarde
+    await new Promise(resolve => setTimeout(resolve, 800))
+    console.log('📄 Auto-save:', data.title, new Date().toLocaleTimeString())
+  }
+
+  const { status: saveStatus, lastSaved, save: forceSave, error: saveError } = useAutoSave({
+    data: callSheet,
+    onSave: mockSave,
+    debounceMs: 500,
+    enabled: true
+  })
 
   // Handler pour mettre à jour les données en temps réel
   const updateCallSheet = (updates: Partial<typeof mockCallSheet>) => {
-    setCallSheet(prev => ({ ...prev, ...updates }))
+    console.log('🔄 Updating call sheet:', updates)
+    setCallSheet(prev => {
+      const newState = { ...prev, ...updates }
+      console.log('📊 New call sheet state:', newState)
+      return newState
+    })
   }
 
   const updateScheduleItem = (index: number, updates: Partial<typeof mockCallSheet.schedule[0]>) => {
+    // Validation si on modifie l'heure
+    if (updates.time !== undefined) {
+      const validation = validateTime(updates.time)
+      const errorKey = `schedule-${callSheet.schedule[index]?.id}`
+      
+      setTimeErrors(prev => {
+        const newErrors = { ...prev }
+        if (validation.isValid) {
+          delete newErrors[errorKey]
+        } else {
+          newErrors[errorKey] = validation.error || 'Format invalide'
+        }
+        return newErrors
+      })
+      
+      // Formatter l'heure si valide
+      if (validation.isValid && updates.time) {
+        updates.time = formatTime(updates.time)
+      }
+    }
+
     setCallSheet(prev => {
       const updatedSchedule = prev.schedule.map((item, i) => 
         i === index ? { ...item, ...updates } : item
@@ -1004,6 +1190,25 @@ export default function CallSheetEditorPage() {
       return {
         ...prev,
         schedule: updatedSchedule
+      }
+    })
+  }
+
+  const moveScheduleItem = (index: number, direction: 'up' | 'down') => {
+    setCallSheet(prev => {
+      const schedule = [...prev.schedule]
+      const newIndex = direction === 'up' ? index - 1 : index + 1
+      
+      // Vérifier les limites
+      if (newIndex < 0 || newIndex >= schedule.length) return prev
+      
+      // Échanger les éléments
+      const [removed] = schedule.splice(index, 1)
+      schedule.splice(newIndex, 0, removed)
+      
+      return {
+        ...prev,
+        schedule
       }
     })
   }
@@ -1101,6 +1306,25 @@ export default function CallSheetEditorPage() {
     }))
   }
 
+  const moveTeamMember = (index: number, direction: 'up' | 'down') => {
+    setCallSheet(prev => {
+      const team = [...prev.team]
+      const newIndex = direction === 'up' ? index - 1 : index + 1
+      
+      // Vérifier les limites
+      if (newIndex < 0 || newIndex >= team.length) return prev
+      
+      // Échanger les éléments
+      const [removed] = team.splice(index, 1)
+      team.splice(newIndex, 0, removed)
+      
+      return {
+        ...prev,
+        team
+      }
+    })
+  }
+
   return (
     <div className="min-h-screen bg-call-times-black flex flex-col">
       {/* Header */}
@@ -1125,7 +1349,22 @@ export default function CallSheetEditorPage() {
             <div className="w-2 h-2 bg-call-times-accent rounded-full" />
             <span className="text-sm text-white">Aperçu temps réel</span>
           </div>
-          <div className="text-call-times-text-disabled text-sm">Non sauvegardé</div>
+          
+          {/* Indicateur de sauvegarde dynamique */}
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${
+              saveStatus === 'saved' ? 'bg-green-500' :
+              saveStatus === 'saving' ? 'bg-yellow-500' :
+              saveStatus === 'unsaved' ? 'bg-gray-500' :
+              'bg-red-500'
+            }`} />
+            <span className="text-sm text-call-times-text-secondary">
+              {saveStatus === 'saved' && lastSaved ? `Sauvegardé ${lastSaved.toLocaleTimeString()}` :
+               saveStatus === 'saving' ? 'Sauvegarde...' :
+               saveStatus === 'unsaved' ? 'Non sauvegardé' :
+               'Erreur de sauvegarde'}
+            </span>
+          </div>
         </div>
         
         <div className="flex items-center gap-3">

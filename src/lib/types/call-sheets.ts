@@ -21,7 +21,9 @@ export interface CallSheet {
   project_name?: string
   locations: Location[]
   important_contacts: ImportantContact[]
-  logo_url?: string
+  logo_production_url?: string
+  logo_marque_url?: string
+  logo_agence_url?: string
   notes?: string
   status: 'draft' | 'finalized' | 'sent'
   created_at: string
