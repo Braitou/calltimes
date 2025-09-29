@@ -9,6 +9,7 @@ import { useAutoSave } from '@/hooks/useAutoSave'
 import { validateTime, formatTime } from '@/lib/validations/schedule'
 import { LogoUpload } from '@/components/ui/logo-upload'
 import { PDFGenerator } from '@/components/ui/pdf-generator'
+import { Mail } from 'lucide-react'
 
 // Mock data pour le développement
 const mockCallSheet = {
@@ -926,23 +927,23 @@ function ParametresSection({ callSheet }: { callSheet: typeof mockCallSheet }) {
         </div>
       </div>
       
-      {/* Section Email (placeholder) */}
+      {/* Section Finalisation & Email */}
       <div>
         <label className="block text-call-times-text-secondary text-sm font-medium uppercase tracking-wider mb-2">
-          📧 Envoi par email
+          📧 Finalisation & Envoi
         </label>
         <div className="bg-call-times-gray-light border border-call-times-gray-medium rounded-lg p-4">
-          <p className="text-call-times-text-muted text-xs mb-3 leading-relaxed">
-            Envoyez votre Call Sheet par email à toute l'équipe. Disponible prochainement.
+          <p className="text-call-times-text-muted text-xs mb-4 leading-relaxed">
+            Finalisez votre Call Sheet et envoyez-la par email à toute l'équipe avec le PDF en pièce jointe.
           </p>
-          <Button 
-            disabled
-            variant="outline"
-            size="sm"
-            className="border-call-times-gray-medium text-call-times-text-disabled cursor-not-allowed"
-          >
-            📤 Envoyer par email
-          </Button>
+          <Link href={`/call-sheets/${callSheet.id}/finalize`}>
+            <Button 
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm"
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              Finaliser et envoyer
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

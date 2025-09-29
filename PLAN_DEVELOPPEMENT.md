@@ -169,10 +169,11 @@
 - [x] **Téléchargement automatique** : PDF se télécharge directement en mode démo
 
 **📧 Intégration Email**
-- [ ] Configuration Postmark (domaine + templates)
-- [ ] Page `/finalize/[callSheetId]`
-- [ ] Formulaire envoi : objet, message, destinataires auto
-- [ ] Envoi PDF en pièce jointe
+- [x] Configuration Postmark (domaine + templates)
+- [x] Page `/finalize/[callSheetId]`
+- [x] Formulaire envoi : objet, message, destinataires auto
+- [x] Envoi PDF en pièce jointe
+- [x] **Tests validation réussis** : Restriction domaine Postmark confirmée (compte pending)
 - [ ] Webhook Postmark pour statut
 
 **🔄 Gestion Erreurs**
