@@ -1,0 +1,246 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono);
+  
+  /* Call Times Design System Colors */
+  --color-call-times-black: #000000;
+  --color-call-times-gray-dark: #111111;
+  --color-call-times-gray-medium: #222222;
+  --color-call-times-gray-light: #333333;
+  --color-call-times-text-primary: #ffffff;
+  --color-call-times-text-secondary: #cccccc;
+  --color-call-times-text-muted: #999999;
+  --color-call-times-text-disabled: #666666;
+  --color-call-times-accent: #4ade80;
+  --color-call-times-accent-hover: #22c55e;
+  
+  /* Section Colors for Editor */
+  --color-section-info: #3b82f6;
+  --color-section-planning: #ef4444;
+  --color-section-team: #4ade80;
+  --color-section-settings: #f97316;
+  
+  /* shadcn/ui mappings */
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.75rem; /* 12px - consistent with mockups */
+  
+  /* Call Times Dark Theme - Default (can be light for some use cases) */
+  --background: #000000;          /* Pure black */
+  --foreground: #ffffff;          /* White text */
+  --card: #111111;                /* Dark gray cards */
+  --card-foreground: #ffffff;     /* White text on cards */
+  --popover: #222222;             /* Medium gray popovers */
+  --popover-foreground: #ffffff;  /* White text on popovers */
+  --primary: #4ade80;             /* Green accent */
+  --primary-foreground: #000000;  /* Black text on green */
+  --secondary: #333333;           /* Light gray secondary */
+  --secondary-foreground: #ffffff; /* White text on secondary */
+  --muted: #222222;               /* Muted background */
+  --muted-foreground: #999999;    /* Muted text */
+  --accent: #4ade80;              /* Green accent */
+  --accent-foreground: #000000;   /* Black text on accent */
+  --destructive: #ef4444;         /* Red for destructive actions */
+  --border: #333333;              /* Border color */
+  --input: #222222;               /* Input background */
+  --ring: #4ade80;                /* Focus ring color */
+  
+  /* Charts */
+  --chart-1: #4ade80;
+  --chart-2: #3b82f6;
+  --chart-3: #ef4444;
+  --chart-4: #f97316;
+  --chart-5: #8b5cf6;
+  
+  /* Sidebar */
+  --sidebar: #111111;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #4ade80;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #333333;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #333333;
+  --sidebar-ring: #4ade80;
+}
+
+/* Light theme variant for PDF generation */
+.light {
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #000000;
+  --muted: #f5f5f5;
+  --muted-foreground: #666666;
+  --accent: #000000;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --border: #e5e5e5;
+  --input: #ffffff;
+  --ring: #000000;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+/* Print CSS for PDF Convergence */
+@media print {
+  .no-print { 
+    display: none !important; 
+  }
+  
+  .print-only { 
+    display: block !important; 
+  }
+  
+  /* A4 Page setup */
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  
+  .a4-page {
+    width: 210mm;
+    min-height: 297mm;
+    background: white !important;
+    color: black !important;
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  
+  /* Ensure proper breaks */
+  .page-break-before {
+    page-break-before: always;
+  }
+  
+  .page-break-after {
+    page-break-after: always;
+  }
+  
+  .page-break-avoid {
+    page-break-inside: avoid;
+  }
+}
+
+/* Call Times Custom Utilities */
+@layer utilities {
+  .text-call-times-primary {
+    color: var(--color-call-times-text-primary);
+  }
+  
+  .text-call-times-secondary {
+    color: var(--color-call-times-text-secondary);
+  }
+  
+  .text-call-times-muted {
+    color: var(--color-call-times-text-muted);
+  }
+  
+  .bg-call-times-black {
+    background-color: var(--color-call-times-black);
+  }
+  
+  .bg-call-times-gray-dark {
+    background-color: var(--color-call-times-gray-dark);
+  }
+  
+  .bg-call-times-gray-medium {
+    background-color: var(--color-call-times-gray-medium);
+  }
+  
+  .bg-call-times-accent {
+    background-color: var(--color-call-times-accent);
+  }
+  
+  .hover\:bg-call-times-accent-hover:hover {
+    background-color: var(--color-call-times-accent-hover);
+  }
+  
+  /* Section colors for editor */
+  .border-section-info {
+    border-color: var(--color-section-info);
+  }
+  
+  .border-section-planning {
+    border-color: var(--color-section-planning);
+  }
+  
+  .border-section-team {
+    border-color: var(--color-section-team);
+  }
+  
+  .border-section-settings {
+    border-color: var(--color-section-settings);
+  }
+  
+  .text-section-info {
+    color: var(--color-section-info);
+  }
+  
+  .text-section-planning {
+    color: var(--color-section-planning);
+  }
+  
+  .text-section-team {
+    color: var(--color-section-team);
+  }
+  
+  .text-section-settings {
+    color: var(--color-section-settings);
+  }
+}

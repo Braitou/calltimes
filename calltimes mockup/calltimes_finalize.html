@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finaliser Call Sheet - Call Times</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        .header {
+            background: #000;
+            border-bottom: 1px solid #333;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .back-button {
+            color: #999;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .back-button:hover {
+            color: #fff;
+            background: #222;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .generation-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: #4ade80;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ade80;
+        }
+        
+        /* Main Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            height: calc(100vh - 80px);
+        }
+        
+        /* Content Area */
+        .content-area {
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* Section Styles */
+        .section {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #333;
+        }
+        
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .preview-btn {
+            background: #333;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .preview-btn:hover {
+            background: #444;
+        }
+        
+        /* Email Section */
+        .email-input-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #ccc;
+            margin-bottom: 0.5rem;
+        }
+        
+        .email-input-container {
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        
+        .email-input-container:focus-within {
+            border-color: #4ade80;
+            background: #333;
+        }
+        
+        .recipient-count {
+            background: #4ade80;
+            color: #000;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .email-input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        
+        .email-input::placeholder {
+            color: #666;
+        }
+        
+        .add-email-btn {
+            background: #4ade80;
+            color: #000;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .add-email-btn:hover {
+            background: #22c55e;
+        }
+        
+        .form-input {
+            width: 100%;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 0.75rem;
+            color: #fff;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #4ade80;
+            background: #333;
+        }
+        
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+        
+        /* Upload Section */
+        .upload-area {
+            border: 2px dashed #333;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.05);
+        }
+        
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            background: #333;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .upload-text {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-bottom: 0.5rem;
+        }
+        
+        .upload-subtext {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .upload-link {
+            color: #4ade80;
+            text-decoration: none;
+        }
+        
+        .upload-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Action Buttons */
+        .action-section {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn-secondary {
+            background: #333;
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-secondary:hover {
+            background: #444;
+        }
+        
+        .btn-primary {
+            background: #4ade80;
+            color: #000;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary:hover {
+            background: #22c55e;
+            transform: translateY(-1px);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background: #111;
+            border-left: 1px solid #333;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        
+        .sidebar-section {
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        
+        .sidebar-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+        
+        .generation-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        
+        .info-label {
+            color: #999;
+        }
+        
+        .info-value {
+            color: #fff;
+            font-weight: 500;
+        }
+        
+        .file-size {
+            color: #4ade80;
+            font-weight: 600;
+        }
+        
+        .quick-action {
+            background: #333;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s;
+        }
+        
+        .quick-action:hover {
+            background: #444;
+        }
+        
+        .action-icon {
+            width: 32px;
+            height: 32px;
+            background: #4ade80;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: #000;
+        }
+        
+        .action-text {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                border-left: none;
+                border-top: 1px solid #333;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .action-section {
+                flex-direction: column;
+            }
+            
+            .content-area {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <a href="#" class="back-button">
+                ← Retour
+            </a>
+            <h1 class="page-title">FINALISER CALL SHEET</h1>
+        </div>
+        
+        <div class="header-actions">
+            <div class="generation-status">
+                <div class="status-dot"></div>
+                <span>PDF Généré</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Content Area -->
+        <div class="content-area">
+            <div class="content-container">
+                <!-- Preview Section -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Prévisualiser</h2>
+                        <a href="#" class="preview-btn">
+                            👁 Ouvrir aperçu
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Email Section -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Envoi Email</h2>
+                    </div>
+                    
+                    <div class="email-input-group">
+                        <label class="input-label">Destinataires</label>
+                        <div class="email-input-container">
+                            <span class="recipient-count">0</span>
+                            <input type="email" class="email-input" placeholder="email@exemple.com">
+                            <button class="add-email-btn">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="email-input-group">
+                        <label class="input-label">Objet de l'email</label>
+                        <input type="text" class="form-input" placeholder="Objet du message...">
+                    </div>
+                    
+                    <div class="email-input-group">
+                        <label class="input-label">Message</label>
+                        <textarea class="form-input form-textarea" placeholder="Bonjour,
+
+Veuillez trouver ci-joint le call sheet pour le tournage.
+
+Merci de confirmer votre présence et de respecter les horaires indiqués.
+
+À bientôt sur le plateau !"></textarea>
+                    </div>
+                </section>
+
+                <!-- Upload Section -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Fichiers supplémentaires</h2>
+                    </div>
+                    
+                    <div class="upload-area">
+                        <div class="upload-icon">📎</div>
+                        <div class="upload-text">
+                            Glissez vos fichiers ici ou <a href="#" class="upload-link">parcourez</a>
+                        </div>
+                        <div class="upload-subtext">
+                            Max 10MB par fichier • 5 fichiers maximum
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Action Buttons -->
+                <div class="action-section">
+                    <button class="btn-secondary">
+                        💾 Sauver brouillon
+                    </button>
+                    <button class="btn-primary">
+                        📧 Envoyer maintenant
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Generation Info -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Génération PDF</h3>
+                <div class="generation-info">
+                    <div class="info-item">
+                        <span class="info-label">Nom du fichier</span>
+                        <span class="info-value">CallSheet_test_2_2025-09-26.pdf</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Taille</span>
+                        <span class="file-size">150 ko</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Statut</span>
+                        <span class="info-value">Prêt</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Actions</h3>
+                
+                <a href="#" class="quick-action">
+                    <div class="action-icon">📄</div>
+                    <span class="action-text">Télécharger PDF</span>
+                </a>
+                
+                <a href="#" class="quick-action">
+                    <div class="action-icon">👁</div>
+                    <span class="action-text">Prévisualiser</span>
+                </a>
+                
+                <a href="#" class="quick-action">
+                    <div class="action-icon">✏️</div>
+                    <span class="action-text">Modifier Call Sheet</span>
+                </a>
+                
+                <a href="#" class="quick-action">
+                    <div class="action-icon">📊</div>
+                    <span class="action-text">Voir statistiques</span>
+                </a>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Contact</h3>
+                <div class="generation-info">
+                    <div class="info-item">
+                        <span class="info-label">Email configuré</span>
+                        <span class="info-value">simon@call-times-app</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Service</span>
+                        <span class="info-value">Postmark</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // Email input handling
+        const emailInput = document.querySelector('.email-input');
+        const addEmailBtn = document.querySelector('.add-email-btn');
+        const recipientCount = document.querySelector('.recipient-count');
+        
+        let recipients = [];
+        
+        function updateRecipientCount() {
+            recipientCount.textContent = recipients.length;
+        }
+        
+        addEmailBtn.addEventListener('click', () => {
+            const email = emailInput.value.trim();
+            if (email && email.includes('@')) {
+                recipients.push(email);
+                emailInput.value = '';
+                updateRecipientCount();
+            }
+        });
+        
+        emailInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addEmailBtn.click();
+            }
+        });
+        
+        // Upload area drag & drop
+        const uploadArea = document.querySelector('.upload-area');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#4ade80';
+            uploadArea.style.background = 'rgba(74, 222, 128, 0.05)';
+        });
+        
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#333';
+            uploadArea.style.background = 'transparent';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#333';
+            uploadArea.style.background = 'transparent';
+            
+            const files = Array.from(e.dataTransfer.files);
+            console.log('Files dropped:', files);
+        });
+        
+        // Form submission
+        document.querySelector('.btn-primary').addEventListener('click', () => {
+            console.log('Sending email with recipients:', recipients);
+        });
+        
+        document.querySelector('.btn-secondary').addEventListener('click', () => {
+            console.log('Saving draft...');
+        });
+    </script>
+</body>
+</html>

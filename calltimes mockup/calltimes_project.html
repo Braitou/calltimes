@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commercial Nike - Call Times</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        /* Header Navigation */
+        .header {
+            background: #000;
+            border-bottom: 1px solid #333;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            font-weight: 900;
+            font-size: 1.5rem;
+            line-height: 0.85;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+        
+        .nav-main {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-main a {
+            color: #999;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .nav-main a.active {
+            color: #fff;
+            background: #333;
+        }
+        
+        .nav-main a:hover {
+            color: #fff;
+            background: #222;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .btn-primary {
+            background: #fff;
+            color: #000;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .btn-primary:hover {
+            background: #f0f0f0;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #333;
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-secondary:hover {
+            background: #444;
+        }
+        
+        .user-avatar {
+            background: #4ade80;
+            color: #000;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        
+        /* Breadcrumb */
+        .breadcrumb {
+            background: #111;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #333;
+        }
+        
+        .breadcrumb-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .breadcrumb a {
+            color: #999;
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            color: #fff;
+        }
+        
+        /* Project Header */
+        .project-header {
+            padding: 2rem;
+            border-bottom: 1px solid #333;
+        }
+        
+        .project-header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+        
+        .project-info h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+        
+        .project-meta {
+            display: flex;
+            gap: 2rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .project-stats {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4ade80;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 3rem;
+        }
+        
+        /* Content Sections */
+        .content-section {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .btn-add {
+            background: #4ade80;
+            color: #000;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-add:hover {
+            background: #22c55e;
+        }
+        
+        /* Call Sheets List */
+        .callsheet-list {
+            list-style: none;
+        }
+        
+        .callsheet-item {
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        
+        .callsheet-item:hover {
+            background: #333;
+            border-color: #444;
+        }
+        
+        .callsheet-info h4 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .callsheet-meta {
+            color: #666;
+            font-size: 0.9rem;
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .callsheet-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .status-finalized {
+            background: #4ade80;
+            color: #000;
+        }
+        
+        .status-draft {
+            background: #333;
+            color: #999;
+        }
+        
+        .status-progress {
+            background: #f59e0b;
+            color: #000;
+        }
+        
+        /* Documents Section */
+        .document-item {
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .doc-icon {
+            width: 40px;
+            height: 40px;
+            background: #4ade80;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #000;
+        }
+        
+        .doc-info {
+            flex: 1;
+        }
+        
+        .doc-info h4 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .doc-meta {
+            color: #666;
+            font-size: 0.8rem;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        
+        .sidebar-card {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .sidebar-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+        
+        .quick-action {
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s;
+        }
+        
+        .quick-action:hover {
+            background: #333;
+        }
+        
+        .action-icon {
+            width: 32px;
+            height: 32px;
+            background: #4ade80;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        
+        .action-text {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        /* Activity Feed */
+        .activity-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #333;
+            font-size: 0.9rem;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-time {
+            color: #666;
+            font-size: 0.8rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .project-header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .callsheet-item {
+                flex-direction: column;
+                align-items: start;
+                gap: 1rem;
+            }
+            
+            .callsheet-actions {
+                align-self: stretch;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">CALL<br>TIMES</div>
+            
+            <nav>
+                <ul class="nav-main">
+                    <li><a href="#">Dashboard</a></li>
+                    <li><a href="#" class="active">Projets</a></li>
+                    <li><a href="#">Contacts</a></li>
+                    <li><a href="#">Analytics</a></li>
+                </ul>
+            </nav>
+            
+            <div class="header-right">
+                <a href="#" class="btn-secondary">Composer Email</a>
+                <a href="#" class="btn-primary">Nouvelle Call Sheet</a>
+                <div class="user-avatar">SB</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <div class="breadcrumb-content">
+            <a href="#">Dashboard</a>
+            <span>→</span>
+            <span>Commercial Nike</span>
+        </div>
+    </div>
+
+    <!-- Project Header -->
+    <section class="project-header">
+        <div class="project-header-content">
+            <div class="project-info">
+                <h1>COMMERCIAL NIKE</h1>
+                <div class="project-meta">
+                    <span>📅 Créé le 23 sept.</span>
+                    <span>📍 Paris, France</span>
+                    <span>🎬 8 fichiers</span>
+                </div>
+            </div>
+            
+            <div class="project-stats">
+                <div class="stat-item">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Call Sheets</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Documents</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">16.5 MB</div>
+                    <div class="stat-label">Taille</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-main">
+            <!-- Call Sheets Section -->
+            <section class="content-section">
+                <div class="section-title">
+                    <span>📋 Call Sheets</span>
+                    <a href="#" class="btn-add">+ Nouvelle</a>
+                </div>
+                
+                <ul class="callsheet-list">
+                    <li class="callsheet-item">
+                        <div class="callsheet-info">
+                            <h4>Nike Air Max - Jour 1</h4>
+                            <div class="callsheet-meta">
+                                <span>25 septembre 2025</span>
+                                <span>Studio Harcourt</span>
+                                <span>45 destinataires</span>
+                            </div>
+                        </div>
+                        <div class="callsheet-actions">
+                            <span class="status-badge status-finalized">Finalisé</span>
+                        </div>
+                    </li>
+                    
+                    <li class="callsheet-item">
+                        <div class="callsheet-info">
+                            <h4>Nike Air Max - Jour 2</h4>
+                            <div class="callsheet-meta">
+                                <span>26 septembre 2025</span>
+                                <span>Location extérieure</span>
+                                <span>Brouillon</span>
+                            </div>
+                        </div>
+                        <div class="callsheet-actions">
+                            <span class="status-badge status-progress">En cours</span>
+                        </div>
+                    </li>
+                    
+                    <li class="callsheet-item">
+                        <div class="callsheet-info">
+                            <h4>Pickup Shots</h4>
+                            <div class="callsheet-meta">
+                                <span>29 septembre 2025</span>
+                                <span>Studio B</span>
+                                <span>Non envoyé</span>
+                            </div>
+                        </div>
+                        <div class="callsheet-actions">
+                            <span class="status-badge status-draft">Brouillon</span>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Documents Section -->
+            <section class="content-section">
+                <div class="section-title">
+                    <span>📁 Documents</span>
+                    <a href="#" class="btn-add">+ Ajouter</a>
+                </div>
+                
+                <div class="document-item">
+                    <div class="doc-icon">PDF</div>
+                    <div class="doc-info">
+                        <h4>Nike Brand Guidelines 2025</h4>
+                        <div class="doc-meta">2.4 MB • Ajouté il y a 3 jours</div>
+                    </div>
+                </div>
+                
+                <div class="document-item">
+                    <div class="doc-icon">DOC</div>
+                    <div class="doc-info">
+                        <h4>Script Commercial v3</h4>
+                        <div class="doc-meta">156 KB • Ajouté il y a 2 jours</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Quick Actions -->
+            <div class="sidebar-card">
+                <h3 class="sidebar-title">Actions</h3>
+                
+                <a href="#" class="quick-action">
+                    <div class="action-icon">📋</div>
+                    <span class="action-text">Nouvelle Call Sheet</span>
+                </a>
+                
+                <a href="#" class="quick-action">
+                    <div class="action-icon">📁</div>
+                    <span class="action-text">Ajouter Fichiers</span>
+                </a>
+                
+                <a href="#" class="quick-action">
+                    <div class="action-icon">📊</div>
+                    <span class="action-text">Voir Statistiques</span>
+                </a>
+                
+                <a href="#" class="quick-action">
+                    <div class="action-icon">🗄️</div>
+                    <span class="action-text">Archiver Projet</span>
+                </a>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="sidebar-card">
+                <h3 class="sidebar-title">Activité</h3>
+                
+                <div class="activity-item">
+                    <div>Call sheet "Jour 2" modifiée</div>
+                    <div class="activity-time">Il y a 2 heures</div>
+                </div>
+                
+                <div class="activity-item">
+                    <div>Script v3 ajouté</div>
+                    <div class="activity-time">Il y a 1 jour</div>
+                </div>
+                
+                <div class="activity-item">
+                    <div>Call sheet finalisée</div>
+                    <div class="activity-time">Il y a 3 jours</div>
+                </div>
+            </div>
+        </aside>
+    </main>
+</body>
+</html>

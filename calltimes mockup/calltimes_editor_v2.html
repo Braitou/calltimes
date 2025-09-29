@@ -1,0 +1,909 @@
+        .department-indicator {
+            background: #4ade80;
+            color: #000;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Éditeur Call Sheet - Call Times</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        /* Header - Plus compact pour l'éditeur */
+        .header {
+            background: #000;
+            border-bottom: 1px solid #333;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .back-button {
+            color: #999;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .back-button:hover {
+            color: #fff;
+            background: #222;
+        }
+        
+        .project-info h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .project-meta {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ade80;
+        }
+        
+        .save-status {
+            color: #666;
+            font-size: 0.8rem;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .btn-secondary {
+            background: #333;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #4ade80;
+            color: #000;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background: #22c55e;
+        }
+        
+        /* Main Layout */
+        .editor-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            height: calc(100vh - 60px);
+        }
+        
+        /* Sidebar Éditeur */
+        .editor-sidebar {
+            background: #111;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Toolbar Sections avec codes couleurs */
+        .toolbar-sections {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            padding: 1rem;
+            border-bottom: 1px solid #333;
+        }
+        
+        .section-tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 0.75rem;
+            color: #999;
+            text-decoration: none;
+            transition: all 0.2s;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border: 2px solid transparent;
+            background: #222;
+        }
+        
+        /* Codes couleurs spécifiques */
+        .section-tab.informations.active {
+            background: #1e3a8a;
+            border-color: #3b82f6;
+            color: #fff;
+        }
+        
+        .section-tab.planning.active {
+            background: #991b1b;
+            border-color: #ef4444;
+            color: #fff;
+        }
+        
+        .section-tab.equipe.active {
+            background: #166534;
+            border-color: #4ade80;
+            color: #fff;
+        }
+        
+        .section-tab.parametres.active {
+            background: #7c2d12;
+            border-color: #f97316;
+            color: #fff;
+        }
+        
+        .section-tab:hover {
+            background: #333;
+            color: #fff;
+        }
+        
+        .section-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #666;
+            transition: all 0.2s;
+        }
+        
+        .section-tab.informations .section-icon {
+            background: #3b82f6;
+        }
+        
+        .section-tab.planning .section-icon {
+            background: #ef4444;
+        }
+        
+        .section-tab.equipe .section-icon {
+            background: #4ade80;
+        }
+        
+        .section-tab.parametres .section-icon {
+            background: #f97316;
+        }
+        
+        /* Section Content */
+        .section-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        
+        .section-panel {
+            display: none;
+        }
+        
+        .section-panel.active {
+            display: block;
+        }
+        
+        /* Headers de section avec couleurs */
+        .section-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid;
+        }
+        
+        .section-header.informations {
+            border-color: #3b82f6;
+        }
+        
+        .section-header.planning {
+            border-color: #ef4444;
+        }
+        
+        .section-header.equipe {
+            border-color: #4ade80;
+        }
+        
+        .section-header.parametres {
+            border-color: #f97316;
+        }
+        
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .section-title.informations {
+            color: #3b82f6;
+        }
+        
+        .section-title.planning {
+            color: #ef4444;
+        }
+        
+        .section-title.equipe {
+            color: #4ade80;
+        }
+        
+        .section-title.parametres {
+            color: #f97316;
+        }
+        
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #ccc;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 0.75rem;
+            color: #fff;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #4ade80;
+            background: #333;
+        }
+        
+        .form-select {
+            width: 100%;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 0.75rem;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        
+        /* Planning spécifique */
+        .planning-section {
+            margin-bottom: 2rem;
+        }
+        
+        .quick-add-section {
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .quick-add-title {
+            font-size: 0.8rem;
+            color: #999;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+        }
+        
+        .quick-add-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+        
+        .quick-add-btn {
+            background: #333;
+            border: 1px solid #444;
+            color: #ccc;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-add-btn:hover {
+            background: #444;
+            color: #fff;
+        }
+        
+        .schedule-item {
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 3px solid #ef4444;
+        }
+        
+        .schedule-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .schedule-item-title {
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .schedule-item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .action-btn {
+            background: #333;
+            border: 1px solid #444;
+            color: #666;
+            cursor: pointer;
+            padding: 0.4rem 0.6rem;
+            border-radius: 3px;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .action-btn:hover {
+            color: #fff;
+            background: #444;
+        }
+        
+        .time-input {
+            background: #333;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+        
+        /* Équipe spécifique */
+        .team-section {
+            margin-bottom: 2rem;
+        }
+        
+        .team-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .team-count {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .department-section {
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 3px solid #4ade80;
+        }
+        
+        .department-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            cursor: pointer;
+        }
+        
+        .department-name {
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .department-badge {
+            background: #4ade80;
+            color: #000;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .contact-card {
+            background: #333;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 0.5rem 1rem 1rem 1rem;
+        }
+        
+        .contact-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .contact-name {
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .contact-role {
+            color: #ccc;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .contact-department {
+            background: #4ade80;
+            color: #000;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .contact-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: #999;
+        }
+        
+        /* Preview Area */
+        .preview-area {
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .preview-toolbar {
+            background: #111;
+            border-bottom: 1px solid #333;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .preview-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #666;
+            font-size: 0.8rem;
+        }
+        
+        .zoom-btn {
+            background: #222;
+            border: 1px solid #333;
+            color: #ccc;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        
+        .zoom-btn:hover {
+            background: #333;
+            color: #fff;
+        }
+        
+        /* Document Preview */
+        .document-preview {
+            flex: 1;
+            padding: 2rem;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: start;
+        }
+        
+        .document-page {
+            background: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            min-height: 800px;
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            color: #000;
+        }
+        
+        .document-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #000;
+            padding-bottom: 1rem;
+        }
+        
+        .document-title {
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+        
+        .document-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .info-item {
+            background: #f5f5f5;
+            padding: 0.75rem;
+            border-radius: 4px;
+        }
+        
+        .info-label {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-value {
+            font-weight: 600;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .editor-layout {
+                grid-template-columns: 300px 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .toolbar-sections {
+                grid-template-columns: 1fr;
+            }
+            
+            .editor-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+            }
+            
+            .editor-sidebar {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <a href="#" class="back-button">
+                ← Retour au projet
+            </a>
+            <div class="project-info">
+                <h1>Call Sheet (25 septembre 2025)</h1>
+                <div class="project-meta">Call Sheet • jeudi 25 septembre 2025</div>
+            </div>
+        </div>
+        
+        <div class="header-center">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>Aperçu temps réel</span>
+            </div>
+            <div class="save-status">Non sauvegardé</div>
+        </div>
+        
+        <div class="header-right">
+            <a href="#" class="btn-secondary">Brouillon</a>
+            <a href="#" class="btn-primary">Finaliser Call Sheet</a>
+        </div>
+    </header>
+
+    <!-- Main Editor Layout -->
+    <div class="editor-layout">
+        <!-- Sidebar Éditeur -->
+        <div class="editor-sidebar">
+            <!-- Toolbar Sections avec codes couleurs -->
+            <nav class="toolbar-sections">
+                <a href="#" class="section-tab informations active" data-section="informations">
+                    <div class="section-icon"></div>
+                    <span>Informations</span>
+                </a>
+                <a href="#" class="section-tab planning" data-section="planning">
+                    <div class="section-icon"></div>
+                    <span>Planning</span>
+                </a>
+                <a href="#" class="section-tab equipe" data-section="equipe">
+                    <div class="section-icon"></div>
+                    <span>Équipe</span>
+                </a>
+                <a href="#" class="section-tab parametres" data-section="parametres">
+                    <div class="section-icon"></div>
+                    <span>Paramètres</span>
+                </a>
+            </nav>
+
+            <!-- Section Content -->
+            <div class="section-content">
+                <!-- Informations Générales -->
+                <div class="section-panel active" id="informations">
+                    <div class="section-header informations">
+                        <h3 class="section-title informations">INFORMATIONS GÉNÉRALES</h3>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Titre du Call Sheet *</label>
+                        <input type="text" class="form-input" value="Call Sheet (25 septembre 2025)">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Date</label>
+                        <input type="date" class="form-input" value="2025-09-25">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Lieu de tournage</label>
+                        <input type="text" class="form-input" placeholder="Studio, lieu...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Informations importantes</label>
+                        <textarea class="form-input" rows="3" placeholder="Informations à communiquer à l'équipe..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Planning -->
+                <div class="section-panel" id="planning">
+                    <div class="section-header planning">
+                        <h3 class="section-title planning">PLANNING</h3>
+                    </div>
+                    
+                    <div class="quick-add-section">
+                        <div class="quick-add-title">Quick adds:</div>
+                        <div class="quick-add-buttons">
+                            <button class="quick-add-btn">Call time — Production</button>
+                            <button class="quick-add-btn">Start shooting</button>
+                            <button class="quick-add-btn">Lunch</button>
+                            <button class="quick-add-btn">Wrap</button>
+                            <button class="quick-add-btn">End of day</button>
+                        </div>
+                    </div>
+                    
+                    <div class="schedule-item">
+                        <div class="schedule-item-header">
+                            <div class="schedule-item-title">Call time — Production</div>
+                            <div class="schedule-item-actions">
+                                <button class="action-btn">EDIT</button>
+                                <button class="action-btn">DEL</button>
+                            </div>
+                        </div>
+                        <input type="time" class="time-input" value="08:00">
+                    </div>
+                    
+                    <div class="schedule-item">
+                        <div class="schedule-item-header">
+                            <div class="schedule-item-title">Start Shooting</div>
+                            <div class="schedule-item-actions">
+                                <button class="action-btn">EDIT</button>
+                                <button class="action-btn">DEL</button>
+                            </div>
+                        </div>
+                        <input type="time" class="time-input" value="09:30">
+                    </div>
+                    
+                    <div class="schedule-item">
+                        <div class="schedule-item-header">
+                            <div class="schedule-item-title">Lunch</div>
+                            <div class="schedule-item-actions">
+                                <button class="action-btn">EDIT</button>
+                                <button class="action-btn">DEL</button>
+                            </div>
+                        </div>
+                        <input type="time" class="time-input" value="13:00">
+                    </div>
+                </div>
+
+                <!-- Équipe -->
+                <div class="section-panel" id="equipe">
+                    <div class="section-header equipe">
+                        <h3 class="section-title equipe">ÉQUIPE</h3>
+                    </div>
+                    
+                    <div class="team-section">
+                        <div class="team-header">
+                            <h4>Équipe de tournage</h4>
+                            <span class="team-count">1 personne</span>
+                        </div>
+                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">Organisez automatiquement par département.</p>
+                        
+                        <div class="department-section">
+                            <div class="department-header">
+                                <div class="department-name">
+                                    <span class="department-indicator">PROD</span>
+                                    Production
+                                </div>
+                                <span class="department-badge">1</span>
+                            </div>
+                            
+                            <div class="contact-card">
+                                <div class="contact-header">
+                                    <div class="contact-name">Simon Bandiera</div>
+                                    <button class="action-btn">DEL</button>
+                                </div>
+                                <div class="contact-role">régisseur</div>
+                                <div class="contact-department">Production</div>
+                                <div class="contact-details">
+                                    <div>+33 6 12 34 56 78</div>
+                                    <div>bandiera.simon@gmail.com</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paramètres -->
+                <div class="section-panel" id="parametres">
+                    <div class="section-header parametres">
+                        <h3 class="section-title parametres">PARAMÈTRES</h3>
+                    </div>
+                    
+                    <div style="background: #333; border: 1px solid #444; border-radius: 6px; padding: 1rem; margin-top: 1rem;">
+                        <p style="color: #999; font-size: 0.8rem; line-height: 1.4;">Les options de personnalisation avancées seront bientôt disponibles</p>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 1.5rem;">
+                        <label class="form-label">Thèmes personnalisés</label>
+                        <select class="form-select" disabled>
+                            <option>Bientôt disponible</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview Area -->
+        <div class="preview-area">
+            <!-- Preview Toolbar -->
+            <div class="preview-toolbar">
+                <span class="preview-title">Aperçu temps réel</span>
+                <div class="zoom-controls">
+                    <button class="zoom-btn">-</button>
+                    <span>75%</span>
+                    <button class="zoom-btn">+</button>
+                </div>
+            </div>
+
+            <!-- Document Preview -->
+            <div class="document-preview">
+                <div class="document-page">
+                    <div class="document-header">
+                        <h1 class="document-title">CALL SHEET (25 SEPTEMBRE 2025)</h1>
+                    </div>
+                    
+                    <div class="document-info">
+                        <div class="info-item">
+                            <div class="info-label">Projet</div>
+                            <div class="info-value">Call Sheet (25 septembre 2025)</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Date</div>
+                            <div class="info-value">jeudi 25 septembre 2025</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Call Time - Production</div>
+                            <div class="info-value">08:00</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Start Shooting</div>
+                            <div class="info-value">09:30</div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; color: #666; margin-top: 2rem; font-style: italic;">
+                        Call Sheet générée le 25/09/2025 à 14:22 - BROUILLON
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gestion des onglets avec codes couleurs
+        document.querySelectorAll('.section-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Remove active class from all tabs and panels
+                document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                
+                // Show corresponding panel
+                const sectionId = tab.getAttribute('data-section');
+                document.getElementById(sectionId).classList.add('active');
+            });
+        });
+        
+        // Quick add buttons for planning
+        document.querySelectorAll('.quick-add-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Simulate adding new schedule item
+                console.log('Adding:', btn.textContent);
+            });
+        });
+    </script>
+</body>
+</html>
