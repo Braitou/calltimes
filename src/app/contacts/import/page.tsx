@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import Link from 'next/link'
 import { ArrowLeft, Download, Upload, CheckCircle, XCircle, AlertCircle, Edit3, Save, X } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import * as XLSX from 'xlsx'
 
 // Mock data pour le développement
 const mockUser = {
@@ -84,26 +85,143 @@ export default function ImportContactsPage() {
   }
 
   // Parser CSV basique
+  // Fonction pour parser Excel
+  const parseExcel = (arrayBuffer: ArrayBuffer): ParsedContact[] => {
+    const workbook = XLSX.read(arrayBuffer, { type: 'buffer' })
+    const sheetName = workbook.SheetNames[0]
+    const worksheet = workbook.Sheets[sheetName]
+    
+    // Convertir en JSON avec headers automatiques
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' })
+    
+    const contacts: ParsedContact[] = []
+    
+    for (let i = 0; i < jsonData.length; i++) {
+      const row = jsonData[i] as any
+      // Essayer différentes variations de noms de colonnes
+      // Pour le nom : soit une colonne unique, soit prénom + nom séparés
+      let name = row.name || row.Name || row.nom || row.Nom || row.NAME || ''
+      if (!name && (row['First Name'] || row['Last Name'])) {
+        // Combiner prénom et nom si séparés
+        const firstName = row['First Name'] || row['Prénom'] || row['Prenom'] || ''
+        const lastName = row['Last Name'] || row['Nom de famille'] || row['Nom'] || ''
+        name = `${firstName} ${lastName}`.trim()
+      }
+      
+      // Pour le rôle : plusieurs variations possibles
+      const role = row.role || row.Role || row.poste || row.Poste || row.ROLE || 
+                   row['Job Title'] || row['Titre'] || row['Fonction'] || 
+                   row['Catégorie'] || row.category || row.Category || ''
+      
+      const email = row.email || row.Email || row.EMAIL || ''
+      const phone = row.phone || row.Phone || row.telephone || row.Telephone || row.PHONE || ''
+      
+      
+      if (name.toString().trim()) {
+        contacts.push({
+          id: `excel-${i}`,
+          name: name.toString().trim(),
+          role: role.toString().trim(),
+          email: email.toString().trim(),
+          phone: phone.toString().trim(),
+          department: detectDepartment(role.toString().trim()),
+          status: 'pending'
+        })
+      }
+    }
+    
+    return contacts
+  }
+
   const parseCSV = (csvText: string): ParsedContact[] => {
     const lines = csvText.trim().split('\n')
     const contacts: ParsedContact[] = []
     
-    // Ignorer la première ligne si c'est un header
-    const startIndex = lines[0]?.toLowerCase().includes('name') ? 1 : 0
+    if (lines.length === 0) return contacts
     
-    for (let i = startIndex; i < lines.length; i++) {
+    // Analyser les headers pour détecter la structure
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, '').toLowerCase())
+    
+    // Mapping des colonnes détectées
+    const columnMap = {
+      name: -1,
+      firstName: -1,
+      lastName: -1,
+      role: -1,
+      email: -1,
+      phone: -1,
+      department: -1
+    }
+    
+    // Détecter les colonnes automatiquement
+    headers.forEach((header, index) => {
+      const h = header.toLowerCase()
+      
+      // Nom complet
+      if (h.includes('name') && !h.includes('first') && !h.includes('last')) {
+        columnMap.name = index
+      }
+      // Prénom
+      else if (h.includes('first') || h.includes('prénom') || h.includes('prenom')) {
+        columnMap.firstName = index
+      }
+      // Nom de famille
+      else if (h.includes('last') || h.includes('nom')) {
+        columnMap.lastName = index
+      }
+      // Rôle/Job Title
+      else if (h.includes('role') || h.includes('job') || h.includes('title') || 
+               h.includes('poste') || h.includes('fonction') || h.includes('titre')) {
+        columnMap.role = index
+      }
+      // Email
+      else if (h.includes('email') || h.includes('mail')) {
+        columnMap.email = index
+      }
+      // Téléphone
+      else if (h.includes('phone') || h.includes('tel') || h.includes('mobile')) {
+        columnMap.phone = index
+      }
+      // Département/Catégorie
+      else if (h.includes('department') || h.includes('catégorie') || h.includes('categorie') ||
+               h.includes('département') || h.includes('category')) {
+        columnMap.department = index
+      }
+    })
+    
+    
+    // Parser les lignes de données
+    for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim()
       if (!line) continue
       
-      const [name, role, email, phone] = line.split(',').map(field => field.trim().replace(/"/g, ''))
+      const fields = line.split(',').map(field => field.trim().replace(/"/g, ''))
+      
+      // Construire le nom
+      let name = ''
+      if (columnMap.name >= 0) {
+        name = fields[columnMap.name] || ''
+      } else if (columnMap.firstName >= 0 || columnMap.lastName >= 0) {
+        const firstName = columnMap.firstName >= 0 ? (fields[columnMap.firstName] || '') : ''
+        const lastName = columnMap.lastName >= 0 ? (fields[columnMap.lastName] || '') : ''
+        name = `${firstName} ${lastName}`.trim()
+      }
+      
+      // Extraire les autres champs
+      const role = columnMap.role >= 0 ? (fields[columnMap.role] || '') : ''
+      const email = columnMap.email >= 0 ? (fields[columnMap.email] || '') : ''
+      const phone = columnMap.phone >= 0 ? (fields[columnMap.phone] || '') : ''
+      const explicitDepartment = columnMap.department >= 0 ? (fields[columnMap.department] || '') : ''
+      
       
       const contact: ParsedContact = {
         id: `import-${Date.now()}-${i}`,
-        name: name || '',
-        role: role || '',
-        email: email || '',
-        phone: phone || '',
-        department: role ? detectDepartment(role) : undefined,
+        name: name,
+        role: role,
+        email: email,
+        phone: phone,
+        // Utiliser le département explicite ou auto-détecter depuis le rôle
+        department: explicitDepartment || detectDepartment(role),
         status: 'pending'
       }
       
@@ -116,7 +234,9 @@ export default function ImportContactsPage() {
         contact.error = 'Email invalide'
       }
       
-      contacts.push(contact)
+      if (contact.name) {
+        contacts.push(contact)
+      }
     }
     
     return contacts
@@ -133,12 +253,33 @@ export default function ImportContactsPage() {
   }
 
   // Traitement du fichier CSV - Phase 1: Parsing et préparation
-  const processCSVFile = async (file: File) => {
+  const processFile = async (file: File) => {
     setIsImporting(true)
     
     try {
-      const text = await file.text()
-      let contacts = parseCSV(text)
+      const fileName = file.name.toLowerCase()
+      let contacts: ParsedContact[] = []
+      
+      
+      // Détection automatique du type de fichier
+      if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+        // Traitement Excel
+        const arrayBuffer = await file.arrayBuffer()
+        contacts = parseExcel(arrayBuffer)
+        toast.success(`Fichier Excel analysé !`, {
+          description: `${contacts.length} contacts détectés dans le fichier Excel`
+        })
+      } else if (fileName.endsWith('.csv')) {
+        // Traitement CSV
+        const text = await file.text()
+        contacts = parseCSV(text)
+        toast.success(`Fichier CSV analysé !`, {
+          description: `${contacts.length} contacts détectés dans le fichier CSV`
+        })
+      } else {
+        throw new Error('Format de fichier non supporté. Utilisez .csv, .xlsx ou .xls')
+      }
+
       
       // Déduplication avec les contacts existants
       contacts = deduplicateContacts(contacts)
@@ -147,11 +288,11 @@ export default function ImportContactsPage() {
       setParsedContacts(contacts)
       setShowEditInterface(true)
       
-      toast.success(`${contacts.length} contacts détectés. Vérifiez et complétez les informations.`)
-      
     } catch (error) {
-      console.error('Erreur import CSV:', error)
-      toast.error('Erreur lors de l\'import du fichier CSV')
+      console.error('Erreur lors du parsing:', error)
+      toast.error('Erreur lors de la lecture du fichier', {
+        description: error instanceof Error ? error.message : 'Format non supporté'
+      })
     } finally {
       setIsImporting(false)
     }
@@ -238,7 +379,7 @@ export default function ImportContactsPage() {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
     if (file) {
-      processCSVFile(file)
+      processFile(file)
     }
   }, [])
 
@@ -246,7 +387,9 @@ export default function ImportContactsPage() {
     onDrop,
     accept: {
       'text/csv': ['.csv'],
-      'text/plain': ['.txt']
+      'text/plain': ['.txt'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'application/vnd.ms-excel': ['.xls']
     },
     multiple: false,
     onDragEnter: () => setIsDragActive(true),
@@ -300,8 +443,8 @@ export default function ImportContactsPage() {
   return (
     <PageLayout user={mockUser} sidebar={sidebar}>
       <SectionHeader 
-        title="IMPORT CSV"
-        subtitle="Importez vos contacts en masse depuis un fichier CSV"
+        title="IMPORT CONTACTS"
+        subtitle="Importez vos contacts en masse depuis un fichier CSV ou Excel"
         action={
           <div className="flex gap-3">
             <Link href="/contacts">
@@ -356,13 +499,13 @@ export default function ImportContactsPage() {
               ) : (
                 <div>
                   <h3 className="text-white font-bold text-lg mb-2">
-                    Glissez votre fichier CSV ici
+                    Glissez votre fichier CSV ou Excel ici
                   </h3>
                   <p className="text-call-times-text-secondary mb-4">
                     ou cliquez pour sélectionner un fichier
                   </p>
                   <p className="text-call-times-text-muted text-sm">
-                    Format attendu : name,role,email,phone
+                    Formats supportés : CSV (.csv) et Excel (.xlsx, .xls)
                   </p>
                 </div>
               )}

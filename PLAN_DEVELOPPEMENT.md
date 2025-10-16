@@ -23,26 +23,78 @@
 | **Phase 1** | ✅ **Terminée** | 100% | Fondations + Auth + UI Base | ✅ Semaine 2 |
 | **Phase 2** | ✅ **Terminée** | 100% | Éditeur + Preview + Auto-save | ✅ Semaine 4 |
 | **Phase 3** | ✅ **Terminée** | 95% | PDF + Email + Finalisation | ✅ Semaine 5 |
-| **Phase 4** | ✅ **Terminée** | 100% | **Contacts CRUD + Intégration** | ✅ Semaine 6 |
-| **Phase 5** | ⏳ À venir | 0% | Finitions + Déploiement | 🎯 Semaine 8 |
+| **Phase 4** | ✅ **TERMINÉE** | 100% | **Contacts + Projets + Duplication** | ✅ Semaine 6 |
+| **Phase 5** | 🚧 En cours | 90% | **Project Hub + Collaboration** | 🎯 Semaines 8-10 |
+| **Phase 6** | ⏳ À venir | 0% | Finitions + Déploiement | 🎯 Semaines 11-12 |
 
-### 🎯 **PROGRESSION TOTALE MVP : ~95% TERMINÉ**
+### 🎯 **PROGRESSION TOTALE MVP : ~90% TERMINÉ (MVP V1)**
 
-**✅ Phase 4 TERMINÉE ! Derniers succès :**
+**✅ Phase 4 COMPLÈTEMENT TERMINÉE ! Tous les succès :**
 - ✅ Interface contacts avec toggle Card/Liste
 - ✅ CRUD complet (Create, Update, Delete) 
 - ✅ Modal sélection contacts dans éditeur
 - ✅ Boutons "📇 Répertoire" fonctionnels
 - ✅ Sélection multiple de contacts
 - ✅ Preview équipe triée par départements
-- ✅ **Import CSV avec drag & drop**
-- ✅ **Parsing avec validation et déduplication**
+- ✅ **Import CSV/Excel avec drag & drop**
+- ✅ **Support XLSX, XLS et CSV**
+- ✅ **Parsing intelligent multi-formats**
+- ✅ **Détection automatique colonnes**
+- ✅ **Auto-détection départements**
+- ✅ **Validation et déduplication**
 - ✅ **Rapport d'import détaillé**
+- ✅ **Gestion projets complète**
+- ✅ **Pages /projects avec CRUD**
+- ✅ **Page projet /projects/[id] avec call sheets**
+- ✅ **Création call sheet depuis projet**
+- ✅ **Duplication call sheet avec date +1**
+- ✅ **Bouton dupliquer dans éditeur**
 
-**🚧 Prochaines étapes (Phase 5) :**
-- Polish & UX finitions
-- Tests utilisateurs  
-- Déploiement production
+**✅ Phase 5 PRESQUE TERMINÉE ! Succès majeurs :**
+
+**🎨 Interface & UX :**
+- ✅ Interface Desktop Canvas complète (3 colonnes : Tools, Canvas, Preview)
+- ✅ Design System cohérent (fond noir #0a0a0a, grille pointillée)
+- ✅ Custom scrollbars et CSS avancé
+- ✅ Intégration Supabase Storage (upload/download/delete réels)
+- ✅ Système d'invitations email complet (Postmark)
+- ✅ Page acceptation invitation `/invite/[token]`
+
+**📁 Gestion de Fichiers Avancée :**
+- ✅ Drag & drop d'icônes sur canvas (comme Windows/macOS)
+- ✅ Sélection multiple (rectangle + Ctrl+Clic)
+- ✅ Création et gestion de dossiers
+- ✅ Drag & drop de fichiers DANS les dossiers
+- ✅ Drag & drop de fichiers HORS des dossiers (vers canvas)
+- ✅ Renommage inline (comme Windows)
+- ✅ Context menu (clic droit) avec actions
+- ✅ Auto-arrangement des items (grille fixe)
+- ✅ Suppression multiple (Delete key)
+- ✅ Positions sauvegardées en temps réel (Supabase)
+- ✅ Table `project_folders` avec positions X/Y
+
+**📄 Preview & Visualisation :**
+- ✅ Preview sidebar interactive (images, PDF, vidéos)
+- ✅ Modal plein écran pour tous les types de fichiers
+- ✅ Navigation entre fichiers (flèches gauche/droite)
+- ✅ Téléchargement depuis preview
+- ✅ **Visualiseur Excel/CSV complet** avec react-data-grid
+- ✅ **Mini-preview Excel/CSV dans sidebar** (5 premières lignes)
+- ✅ Support multi-feuilles Excel (onglets)
+- ✅ Bouton "Agrandir" au hover
+
+**📋 Call Sheets Intégration :**
+- ✅ Call Sheets affichés comme icônes sur canvas
+- ✅ Double-clic → ouvre l'éditeur
+- ✅ Création depuis "Tools" card
+- ✅ Suppression fonctionnelle
+- ✅ Fix : Plus de duplication au moment de la création
+
+**🔄 Prochaines étapes (Phase 5 - Finitions) :**
+- ⏳ Tests RLS et permissions en conditions réelles
+- ⏳ Visualiseurs Word/PowerPoint (Google Docs Viewer)
+- ⏳ Notifications et activité récente
+- ⏳ Optimisations performances
 
 ---
 
@@ -235,35 +287,167 @@
 - [x] **Sélection multiple** : Ajout de plusieurs contacts en une fois
 - [x] **Interface optimisée** : Cards compactes avec badges colorés
 - [x] **Preview améliorée** : Équipe triée par départements avec headers grisés
-- [ ] Conversion ligne manuelle → contact permanent
-- [ ] Gestion des contacts "favoris" ou récents
+- [x] Conversion ligne manuelle → contact permanent
+- [x] Gestion des contacts "favoris" ou récents
 
 #### **Semaine 7 : Import CSV & Projets**
 
-**📊 Import CSV**
-- [x] **Interface upload CSV** : Drag & drop avec react-dropzone
-- [x] **Format fixe** : `name,role,email,phone` validé
-- [x] **Parsing avec validation** : Validation temps réel des champs
+**📊 Import CSV/Excel**
+- [x] **Interface upload multi-formats** : Drag & drop CSV, XLSX, XLS
+- [x] **Détection automatique type fichier** : Parser adapté selon extension
+- [x] **Parsing intelligent CSV** : Détection automatique colonnes (name, first/last name, role, job title, email, phone, department, catégorie)
+- [x] **Parsing intelligent Excel** : Support colonnes variées (First Name, Last Name, Job Title, Catégorie, etc.)
+- [x] **Auto-détection départements** : Depuis colonne explicite OU analyse du rôle
+- [x] **Validation temps réel** : Email, téléphone, champs requis
 - [x] **Déduplication par email** : Détection automatique des doublons
-- [x] **Rapport d'import** : Statistiques détaillées (créés/ignorés/erreurs)
+- [x] **Rapport d'import détaillé** : Statistiques (créés/ignorés/erreurs)
 - [x] **Template CSV** : Téléchargement de modèle pré-formaté
 - [x] **UX professionnelle** : Interface intuitive avec feedback visuel
 
 **📁 Gestion Projets**
-- [ ] Page `/projects` avec liste
-- [ ] CRUD projets basique
-- [ ] Page projet `/projects/[id]` 
-- [ ] Liste des call sheets du projet
-- [ ] Actions : créer call sheet, dupliquer
+- [x] Page `/projects` avec liste
+- [x] CRUD projets basique
+- [x] Page projet `/projects/[id]` 
+- [x] Liste des call sheets du projet
+- [x] Actions : créer call sheet, dupliquer
 
 **📋 Duplication Call Sheet**
-- [ ] Bouton "Dupliquer" sur call sheet existante
-- [ ] Copie des données + date +1 jour
-- [ ] Modification possible avant sauvegarde
+- [x] Bouton "Dupliquer" sur call sheet existante
+- [x] Copie des données + date +1 jour
+- [x] Modification possible avant sauvegarde
 
 ---
 
-### 🚀 **PHASE 5 : FINITIONS & DÉPLOIEMENT (Semaine 8)**
+### 📁 **PHASE 5 : PROJECT HUB & COLLABORATION (Semaines 8-10)**
+
+> **Vision** : Transformer les projets en véritables hubs cloud collaboratifs où toute l'équipe peut consulter et gérer les documents de production
+
+#### **Semaine 8 : File Management Core**
+
+**🗄️ Base de Données**
+- [x] Migration : Table `project_files` ✅
+  - [x] Colonnes : id, project_id, file_name, file_path, file_type, folder_path ✅
+  - [x] Colonnes : uploaded_by, created_at, file_size, mime_type ✅
+  - [x] RLS policies pour accès sécurisé ✅
+- [x] Migration : Table `project_members` ✅
+  - [x] Colonnes : id, project_id, user_id (nullable), email, role ✅
+  - [x] Colonnes : invitation_token, invitation_status, invited_at, accepted_at ✅
+  - [x] RLS policies pour permissions ✅
+- [x] Bucket Supabase Storage : `project-files` avec quotas ✅
+
+**📤 Upload de Fichiers**
+- [x] Interface drag & drop (react-dropzone) ✅
+- [x] Upload vers Supabase Storage ✅
+- [x] Validation : taille max (100MB), types autorisés ✅
+- [x] Progress bar et feedback visuel ✅
+- [x] Gestion d'erreurs (quota dépassé, type invalide) ✅
+
+**📋 Gestion des Fichiers**
+- [x] Liste des fichiers du projet (grid + list view) ✅
+- [x] Affichage : nom, type, taille, date upload, uploadé par ✅
+- [x] Actions : télécharger, supprimer, renommer ✅
+- [x] Tri et filtres basiques (par type, par date) ✅
+- [x] Search dans les noms de fichiers ✅
+
+**🖼️ Prévisualisation Basique**
+- [x] Preview images (JPG, PNG, GIF, WebP) ✅
+- [x] Preview PDF (structure prête, viewer à compléter) ✅
+- [x] Modal fullscreen pour viewer ✅
+- [x] Navigation entre fichiers (dans modal) ✅
+- [x] Fallback pour types non supportés ✅
+
+#### **Semaine 9 : Interface Hub & Collaboration**
+
+**🎨 Page Projet `/projects/[id]` Refonte**
+- [x] Layout : Grid 2 colonnes (files principale + sidebar) ✅
+- [x] Card "Files" : Liste/grille des fichiers ✅
+- [x] Card "Tools" : Actions disponibles ✅
+  - [x] Lien vers Call Sheet Editor ✅
+  - [x] Statistiques du projet ✅
+- [x] Card "Team" : Membres du projet ✅
+  - [x] Liste des membres actifs ✅
+  - [x] Bouton "Invite Member" ✅
+  - [x] Rôles affichés (Owner/Editor/Viewer) ✅
+- [x] Header projet : titre, statut, actions rapides ✅
+
+**👥 Système d'Invitations**
+- [x] Modal "Invite Member" avec champ email + rôle ✅
+- [x] Génération token d'invitation unique (UUID) ✅
+- [x] Envoi email via Postmark avec lien magique ✅
+- [x] Template email invitation personnalisé ✅
+- [x] Page `/invite/[token]` pour acceptation ✅
+  - [x] Vérification token valide (expiration 7 jours) ✅
+  - [x] Création compte si nouvel utilisateur ✅
+  - [x] Association au projet ✅
+  - [x] Redirection vers projet après acceptation ✅
+
+**🔐 Permissions & Sécurité**
+- [x] Rôles : Owner (full), Editor (upload/delete), Viewer (read-only) ✅
+- [x] RLS Supabase : vérification membre avant accès fichiers ✅
+- [x] URLs signées pour fichiers (Supabase Storage) ✅
+- [ ] Logs d'accès : qui a consulté quel fichier (optionnel)
+- [x] Protection téléchargement : vérification permissions ✅
+
+#### **Semaine 10 : Advanced Features & Polish**
+
+**📁 Organisation par Dossiers**
+- [x] Création/suppression de dossiers ✅
+- [x] Drag & drop pour déplacer fichiers DANS dossiers ✅
+- [x] Drag & drop pour sortir fichiers DES dossiers ✅
+- [x] Renommage inline (double-clic) ✅
+- [x] Context menu (clic droit) avec actions ✅
+- [x] Positions X/Y sauvegardées en temps réel ✅
+- [ ] Navigation breadcrumb (pas nécessaire pour desktop canvas)
+- [ ] Dossiers par défaut suggérés
+
+**🔍 Sélection & Navigation**
+- [x] Sélection simple (clic) ✅
+- [x] Sélection multiple (Ctrl+Clic) ✅
+- [x] Sélection rectangle (drag) ✅
+- [x] Suppression multiple (Delete key) ✅
+- [x] Auto-arrangement (clic droit → Ranger) ✅
+- [x] Navigation entre fichiers (preview modal) ✅
+- [ ] Raccourcis clavier avancés (Cmd+A, Cmd+C/V)
+- [ ] Vue liste vs grille (toggle) - Actuellement: desktop canvas uniquement
+
+**📎 Visualiseurs Multi-Formats**
+- [x] **Excel/CSV Viewer complet** : react-data-grid, multi-feuilles, scroll virtuel ✅
+- [x] **Mini-preview Excel/CSV** : 5 premières lignes dans sidebar ✅
+- [x] Images : JPG, PNG, GIF, WebP ✅
+- [x] PDF : iframe natif ✅
+- [x] Video player : MP4, MOV (HTML5 video) ✅
+- [x] Audio player : MP3, WAV (HTML5 audio) ✅
+- [ ] Office Viewer : Word, PowerPoint (Google Docs Viewer)
+- [ ] Amélioration PDF : annotations, zoom, page navigation
+
+**🔔 Notifications**
+- [ ] Email : nouveau fichier uploadé
+- [ ] Email : nouveau membre ajouté
+- [ ] Badge notifications in-app (header)
+- [ ] Liste activités récentes du projet
+
+**✨ UX Polish**
+- [x] Loading states pour Excel/CSV ✅
+- [x] Animations : drag & drop, hover effects ✅
+- [x] Empty states : "Aucun fichier" ✅
+- [x] Custom scrollbars (style cohérent) ✅
+- [x] Feedback visuel : toasts, bordures sélection ✅
+- [ ] Responsive : tablet/mobile friendly
+- [ ] Animations d'apparition de fichiers
+- [ ] Raccourcis clavier : upload (Cmd+U), search (Cmd+K)
+
+**🧪 Tests & Sécurité**
+- [x] Tests : upload fichiers volumineux (100MB) ✅
+- [x] Tests : suppression fichiers ✅
+- [x] Tests : déplacement fichiers (dossiers) ✅
+- [ ] Tests : invitations (acceptation, expiration)
+- [ ] Tests : permissions (tentative accès non autorisé)
+- [ ] Tests : suppression cascade (projet → fichiers)
+- [ ] Tests : quotas storage (limite atteinte)
+
+---
+
+### 🚀 **PHASE 6 : FINITIONS & DÉPLOIEMENT (Semaines 11-12)**
 
 #### **Polish & UX**
 
@@ -280,10 +464,12 @@
   - [ ] `pdf_generated` 
   - [ ] `email_sent`
   - [ ] `csv_imported`
+  - [ ] `file_uploaded`
+  - [ ] `member_invited`
 
 **🧪 Tests Utilisateurs**
 - [ ] Tests avec 3-5 utilisateurs réels
-- [ ] Scénario complet : projet → call sheet → PDF → email
+- [ ] Scénario complet : projet → upload fichiers → invite team → call sheet → PDF → email
 - [ ] Corrections bugs critiques
 - [ ] Validation convergence preview/PDF
 
@@ -304,8 +490,14 @@
 **📧 Configuration Email**
 - [ ] Domaine d'envoi configuré
 - [ ] SPF/DKIM/DMARC records
-- [ ] Templates Postmark finalisés
+- [ ] Templates Postmark finalisés (call sheet + invitations)
 - [ ] Tests d'envoi en production
+
+**💾 Storage & Quotas**
+- [ ] Configuration limites Supabase Storage
+- [ ] Monitoring utilisation par projet
+- [ ] Alertes quotas (90% utilisés)
+- [ ] Plan upgrade storage si besoin
 
 ---
 
@@ -386,8 +578,8 @@
 
 ---
 
-> **🎯 Objectif Final** : Un MVP fonctionnel permettant de créer et envoyer des call sheets professionnelles en moins de 5 minutes, avec une qualité PDF impeccable et une UX fluide.
+> **🎯 Objectif Final** : Une plateforme collaborative complète pour productions audiovisuelles, permettant de gérer projets, fichiers, équipes et call sheets dans un hub cloud centralisé. L'utilisateur peut créer des call sheets professionnelles, partager des documents avec son équipe, et inviter des collaborateurs en quelques clics.
 
-**Dernière mise à jour** : 29 septembre 2025  
-**Version** : 1.2  
-**Statut** : 🚧 Phase 4 en cours - 85% terminé
+**Dernière mise à jour** : 16 octobre 2025  
+**Version** : 2.5 (Project Hub Advanced Edition)  
+**Statut** : ✅ Phase 4 TERMINÉE - 🚧 Phase 5 (Project Hub) PRESQUE TERMINÉE - 90% MVP V1 terminé

@@ -243,4 +243,36 @@
   .text-section-settings {
     color: var(--color-section-settings);
   }
+  
+  /* Project Hub Desktop - Grille background */
+  .desktop-grid {
+    background-image: 
+      repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(74, 222, 128, 0.03) 19px, rgba(74, 222, 128, 0.03) 20px),
+      repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(74, 222, 128, 0.03) 19px, rgba(74, 222, 128, 0.03) 20px);
+    background-size: 80px 80px;
+  }
+  
+  /* Text shadow pour labels desktop */
+  .text-shadow {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  }
+  
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #0a0a0a;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #444;
+  }
 }

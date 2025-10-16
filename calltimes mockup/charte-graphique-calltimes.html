@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charte Graphique - Call Times</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
+            color: #fff;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 6rem;
+            padding-bottom: 4rem;
+            border-bottom: 1px solid #333;
+        }
+        
+        .header h1 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        
+        .header h2 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+        }
+        
+        .header p {
+            font-size: 1.25rem;
+            color: #a3a3a3;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Section */
+        .section {
+            margin-bottom: 6rem;
+        }
+        
+        .section-title {
+            font-size: 0.875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #4ade80;
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #333;
+        }
+        
+        /* Logo Showcase */
+        .logo-showcase {
+            display: grid;
+            gap: 4rem;
+        }
+        
+        .logo-variant {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 4rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        .logo-variant-label {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #666;
+        }
+        
+        .logo {
+            display: inline-block;
+        }
+        
+        .logo-call {
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            line-height: 0.85;
+        }
+        
+        .logo-times {
+            font-family: 'Libre Baskerville', serif;
+            font-style: italic;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+        }
+        
+        /* Logo sizes */
+        .logo-large .logo-call {
+            font-size: 5rem;
+        }
+        
+        .logo-large .logo-times {
+            font-size: 5.5rem;
+        }
+        
+        .logo-medium .logo-call {
+            font-size: 3rem;
+        }
+        
+        .logo-medium .logo-times {
+            font-size: 3.3rem;
+        }
+        
+        .logo-small .logo-call {
+            font-size: 1.5rem;
+        }
+        
+        .logo-small .logo-times {
+            font-size: 1.65rem;
+        }
+        
+        /* Logo horizontal */
+        .logo-horizontal {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+        
+        .logo-horizontal .logo-call {
+            font-size: 2.5rem;
+        }
+        
+        .logo-horizontal .logo-times {
+            font-size: 2.75rem;
+        }
+        
+        /* Typography Scale */
+        .typo-scale {
+            display: grid;
+            gap: 3rem;
+        }
+        
+        .typo-item {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+        
+        .typo-info {
+            border-right: 1px solid #222;
+            padding-right: 2rem;
+        }
+        
+        .typo-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #4ade80;
+            margin-bottom: 1rem;
+        }
+        
+        .typo-specs {
+            font-size: 0.875rem;
+            color: #666;
+            font-family: 'Monaco', 'Courier New', monospace;
+            line-height: 1.8;
+        }
+        
+        .typo-specs div {
+            margin-bottom: 0.25rem;
+        }
+        
+        .typo-example {
+            padding: 1rem;
+        }
+        
+        /* Typography Examples */
+        .hero-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            font-size: 4rem;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            line-height: 0.9;
+        }
+        
+        .hero-subtitle {
+            font-family: 'Libre Baskerville', serif;
+            font-style: italic;
+            font-size: 2rem;
+            color: #a3a3a3;
+            margin-top: 1rem;
+        }
+        
+        .page-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        
+        .section-header {
+            font-family: 'Libre Baskerville', serif;
+            font-style: italic;
+            font-size: 1.75rem;
+            color: #fff;
+        }
+        
+        .subsection-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #a3a3a3;
+        }
+        
+        .card-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+        
+        .card-subtitle {
+            font-family: 'Libre Baskerville', serif;
+            font-style: italic;
+            font-size: 1rem;
+            color: #a3a3a3;
+            margin-top: 0.25rem;
+        }
+        
+        .body-text {
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            font-size: 0.9375rem;
+            line-height: 1.6;
+            color: #a3a3a3;
+        }
+        
+        .label-text {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #666;
+        }
+        
+        /* Context Examples */
+        .context-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+        
+        .context-card {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 2rem;
+        }
+        
+        .context-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #4ade80;
+            margin-bottom: 2rem;
+        }
+        
+        /* Color Palette */
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+        
+        .color-item {
+            text-align: center;
+        }
+        
+        .color-swatch {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            border: 1px solid #333;
+        }
+        
+        .color-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .color-code {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: #666;
+        }
+        
+        /* Usage Guidelines */
+        .guidelines {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        .guideline-card {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 2rem;
+        }
+        
+        .guideline-card.do {
+            border-left: 3px solid #4ade80;
+        }
+        
+        .guideline-card.dont {
+            border-left: 3px solid #ef4444;
+        }
+        
+        .guideline-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .guideline-title.do {
+            color: #4ade80;
+        }
+        
+        .guideline-title.dont {
+            color: #ef4444;
+        }
+        
+        .guideline-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .guideline-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #111;
+            color: #a3a3a3;
+            font-size: 0.9375rem;
+        }
+        
+        .guideline-list li:last-child {
+            border-bottom: none;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .typo-item {
+                grid-template-columns: 1fr;
+            }
+            
+            .typo-info {
+                border-right: none;
+                border-bottom: 1px solid #222;
+                padding-right: 0;
+                padding-bottom: 2rem;
+            }
+            
+            .context-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .guidelines {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Charte Graphique</h1>
+            <h2>Call Times Typography System</h2>
+            <p>Un système typographique élégant mêlant modernité brutale et raffinement classique</p>
+        </div>
+
+        <!-- Logo Variations -->
+        <section class="section">
+            <h2 class="section-title">Logo Principal</h2>
+            
+            <div class="logo-showcase">
+                <!-- Large Vertical -->
+                <div class="logo-variant">
+                    <div class="logo-variant-label">Primary - Vertical Large</div>
+                    <div class="logo logo-large">
+                        <div class="logo-call">CALL</div>
+                        <div class="logo-times">Times</div>
+                    </div>
+                </div>
+                
+                <!-- Medium Vertical -->
+                <div class="logo-variant">
+                    <div class="logo-variant-label">Navigation - Vertical Medium</div>
+                    <div class="logo logo-medium">
+                        <div class="logo-call">CALL</div>
+                        <div class="logo-times">Times</div>
+                    </div>
+                </div>
+                
+                <!-- Horizontal -->
+                <div class="logo-variant">
+                    <div class="logo-variant-label">Alternative - Horizontal</div>
+                    <div class="logo logo-horizontal">
+                        <div class="logo-call">CALL</div>
+                        <div class="logo-times">Times</div>
+                    </div>
+                </div>
+                
+                <!-- Small -->
+                <div class="logo-variant">
+                    <div class="logo-variant-label">Mobile/Compact</div>
+                    <div class="logo logo-small">
+                        <div class="logo-call">CALL</div>
+                        <div class="logo-times">Times</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Typography Scale -->
+        <section class="section">
+            <h2 class="section-title">Hiérarchie Typographique</h2>
+            
+            <div class="typo-scale">
+                <!-- Hero Title -->
+                <div class="typo-item">
+                    <div class="typo-info">
+                        <div class="typo-label">Hero Title</div>
+                        <div class="typo-specs">
+                            <div>Font: Inter</div>
+                            <div>Weight: 900 (Black)</div>
+                            <div>Size: 4rem / 64px</div>
+                            <div>Transform: Uppercase</div>
+                            <div>Tracking: -0.02em</div>
+                            <div>Usage: Landing, grandes sections</div>
+                        </div>
+                    </div>
+                    <div class="typo-example">
+                        <div class="hero-title">MISSION CONTROL</div>
+                    </div>
+                </div>
+                
+                <!-- Hero Subtitle -->
+                <div class="typo-item">
+                    <div class="typo-info">
+                        <div class="typo-label">Hero Subtitle</div>
+                        <div class="typo-specs">
+                            <div>Font: Libre Baskerville</div>
+                            <div>Weight: 400 (Regular)</div>
+                            <div>Style: Italic</div>
+                            <div>Size: 2rem / 32px</div>
+                            <div>Color: #a3a3a3</div>
+                            <div>Usage: Sous-titres élégants</div>
+                        </div>
+                    </div>
+                    <div class="typo-example">
+                        <div class="hero-subtitle">Coordonnez vos productions avec élégance</div>
+                    </div>
+                </div>
+                
+                <!-- Page Title -->
+                <div class="typo-item">
+                    <div class="typo-info">
+                        <div class="typo-label">Page Title</div>
+                        <div class="typo-specs">
+                            <div>Font: Inter</div>
+                            <div>Weight: 900 (Black)</div>
+                            <div>Size: 2.5rem / 40px</div>
+                            <div>Transform: Uppercase</div>
+                            <div>Usage: Titres de pages</div>
+                        </div>
+                    </div>
+                    <div class="typo-example">
+                        <div class="page-title">CONTACT DIRECTORY</div>
+                    </div>
+                </div>
+                
+                <!-- Section Header -->
+                <div class="typo-item">
+                    <div class="typo-info">
+                        <div class="typo-label">Section Header</div>
+                        <div class="typo-specs">
+                            <div>Font: Libre Baskerville</div>
+                            <div>Weight: 400 (Regular)</div>
+                            <div>Style: Italic</div>
+                            <div>Size: 1.75rem / 28px</div>
+                            <div>Usage: Sections importantes</div>
+                        </div>
+                    </div>
+                    <div class="typo-example">
+                        <div class="section-header">Welcome back, Simon</div>
+                    </div>
+                </div>
+                
+                <!-- Subsection Title -->
+                <div class="typo-item">
+                    <div class="typo-info">
+                        <div class="typo-label">Subsection Title</div>
+                        <div class="typo-specs">
+                            <div>Font: Inter</div>
+                            <div>Weight: 700 (Bold)</div>
+                            <div>Size: 1rem / 16px</div>
+                            <div>Transform: Uppercase</div>
+                            <div>Tracking: 0.05em</div>
+                            <div>Usage: Catégories, groupes</div>
+                        </div>
+                    </div>
+                    <div class="typo-example">
+                        <div class="subsection-title">ACTIVE PROJECTS</div>
+                    </div>
+                </div>
+                
+                <!-- Card Title -->
+                <div class="typo-item">
+                    <div class="typo-info">
+                        <div class="typo-label">Card Title</div>
+                        <div class="typo-specs">
+                            <div>Font: Inter</div>
+                            <div>Weight: 700 (Bold)</div>
+                            <div>Size: 1.125rem / 18px</div>
+                            <div>Usage: Titres de cards</div>
+                        </div>
+                    </div>
+                    <div class="typo-example">
+                        <div class="card-title">Commercial Nike Air Max</div>
+                    </div>
+                </div>
+                
+                <!-- Card Subtitle -->
+                <div class="typo-item">
+                    <div class="typo-info">
+                        <div class="typo-label">Card Subtitle</div>
+                        <div class="typo-specs">
+                            <div>Font: Libre Baskerville</div>
+                            <div>Weight: 400 (Regular)</div>
+                            <div>Style: Italic</div>
+                            <div>Size: 1rem / 16px</div>
+                            <div>Color: #a3a3a3</div>
+                            <div>Usage: Descriptions courtes</div>
+                        </div>
+                    </div>
+                    <div class="typo-example">
+                        <div class="card-subtitle">A high-energy commercial shoot</div>
+                    </div>
+                </div>
+                
+                <!-- Body Text -->
+                <div class="typo-item">
+                    <div class="typo-info">
+                        <div class="typo-label">Body Text</div>
+                        <div class="typo-specs">
+                            <div>Font: Inter</div>
+                            <div>Weight: 400 (Regular)</div>
+                            <div>Size: 0.9375rem / 15px</div>
+                            <div>Line-height: 1.6</div>
+                            <div>Color: #a3a3a3</div>
+                            <div>Usage: Paragraphes, contenu</div>
+                        </div>
+                    </div>
+                    <div class="typo-example">
+                        <div class="body-text">This production requires meticulous planning and coordination across multiple departments. The call sheet must reflect accurate timing and clear communication.</div>
+                    </div>
+                </div>
+                
+                <!-- Label -->
+                <div class="typo-item">
+                    <div class="typo-info">
+                        <div class="typo-label">Label/Metadata</div>
+                        <div class="typo-specs">
+                            <div>Font: Inter</div>
+                            <div>Weight: 600 (Semibold)</div>
+                            <div>Size: 0.75rem / 12px</div>
+                            <div>Transform: Uppercase</div>
+                            <div>Tracking: 0.05em</div>
+                            <div>Color: #666</div>
+                            <div>Usage: Labels, tags, metadata</div>
+                        </div>
+                    </div>
+                    <div class="typo-example">
+                        <div class="label-text">STATUS • ACTIVE</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Context Examples -->
+        <section class="section">
+            <h2 class="section-title">Exemples en Contexte</h2>
+            
+            <div class="context-grid">
+                <!-- Dashboard Header -->
+                <div class="context-card">
+                    <div class="context-label">Dashboard Header</div>
+                    <div class="hero-title" style="font-size: 2.5rem; margin-bottom: 0.5rem;">DASHBOARD</div>
+                    <div class="hero-subtitle" style="font-size: 1.25rem;">Your production command center</div>
+                </div>
+                
+                <!-- Project Card -->
+                <div class="context-card">
+                    <div class="context-label">Project Card</div>
+                    <div class="label-text" style="margin-bottom: 0.5rem;">COMMERCIAL • SPORT</div>
+                    <div class="card-title" style="margin-bottom: 0.25rem;">Nike Air Max Campaign</div>
+                    <div class="card-subtitle">Spring 2025 collection launch</div>
+                    <div class="body-text" style="margin-top: 1rem; font-size: 0.875rem;">A dynamic 3-day shoot featuring athletes and lifestyle content.</div>
+                </div>
+                
+                <!-- Welcome Section -->
+                <div class="context-card">
+                    <div class="context-label">Welcome Section</div>
+                    <div class="section-header" style="margin-bottom: 0.5rem;">Welcome back, Simon</div>
+                    <div class="body-text">You have 3 active projects and 12 upcoming call sheets this month.</div>
+                </div>
+                
+                <!-- Page Header -->
+                <div class="context-card">
+                    <div class="context-label">Page Header</div>
+                    <div class="page-title" style="font-size: 2rem; margin-bottom: 0.5rem;">MISSION CONTROL</div>
+                    <div class="body-text">Coordonnez vos productions comme un général d'armée</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Color Palette -->
+        <section class="section">
+            <h2 class="section-title">Palette de Couleurs</h2>
+            
+            <div class="color-grid">
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #000;"></div>
+                    <div class="color-name">Background</div>
+                    <div class="color-code">#000000</div>
+                </div>
+                
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #0a0a0a;"></div>
+                    <div class="color-name">Surface</div>
+                    <div class="color-code">#0a0a0a</div>
+                </div>
+                
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #4ade80;"></div>
+                    <div class="color-name">Accent Primary</div>
+                    <div class="color-code">#4ade80</div>
+                </div>
+                
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #fff;"></div>
+                    <div class="color-name">Text Primary</div>
+                    <div class="color-code">#ffffff</div>
+                </div>
+                
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #a3a3a3;"></div>
+                    <div class="color-name">Text Secondary</div>
+                    <div class="color-code">#a3a3a3</div>
+                </div>
+                
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #666;"></div>
+                    <div class="color-name">Text Tertiary</div>
+                    <div class="color-code">#666666</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Usage Guidelines -->
+        <section class="section">
+            <h2 class="section-title">Règles d'Usage</h2>
+            
+            <div class="guidelines">
+                <!-- DO -->
+                <div class="guideline-card do">
+                    <div class="guideline-title do">✓ À FAIRE</div>
+                    <ul class="guideline-list">
+                        <li>Utiliser Inter Black pour les appels à l'action et titres forts</li>
+                        <li>Réserver Baskerville Italic pour les moments élégants et narratifs</li>
+                        <li>Maintenir le contraste fort entre les deux fonts</li>
+                        <li>Uppercase uniquement pour Inter (jamais Baskerville)</li>
+                        <li>Espacements généreux autour des titres Baskerville</li>
+                        <li>Tracking négatif sur Inter Black pour les gros titres</li>
+                    </ul>
+                </div>
+                
+                <!-- DON'T -->
+                <div class="guideline-card dont">
+                    <div class="guideline-title dont">✗ À ÉVITER</div>
+                    <ul class="guideline-list">
+                        <li>Utiliser Baskerville pour des boutons ou labels UI</li>
+                        <li>Mettre Baskerville en uppercase (perd son élégance)</li>
+                        <li>Utiliser Inter Regular pour des titres (pas assez d'impact)</li>
+                        <li>Mélanger les deux fonts dans une même phrase</li>
+                        <li>Utiliser Baskerville en petite taille (< 14px)</li>
+                        <li>Trop d'italiques sur une même page (dilue l'effet)</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Font Loading -->
+        <section class="section">
+            <h2 class="section-title">Implémentation Technique</h2>
+            
+            <div class="context-card">
+                <div class="context-label">Google Fonts Import</div>
+                <pre style="background: #111; padding: 1.5rem; border-radius: 8px; overflow-x: auto; font-family: 'Monaco', monospace; font-size: 0.875rem; color: #a3a3a3; line-height: 1.6;">
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+
+/* Logo */
+.logo-call {
+  font-family: 'Inter', sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+.logo-times {
+  font-family: 'Libre Baskerville', serif;
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Hero Title */
+.hero-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 900;
+  font-size: 4rem;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 0.9;
+}
+
+/* Section Header */
+.section-header {
+  font-family: 'Libre Baskerville', serif;
+  font-style: italic;
+  font-size: 1.75rem;
+}</pre>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

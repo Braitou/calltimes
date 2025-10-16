@@ -24,11 +24,13 @@ export function PageLayout({
       <Header user={user} />
       
       <main className={cn(
-        "mx-auto max-w-7xl px-8 py-8",
-        showSidebar ? "grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-12" : "",
+        "w-full py-12 mx-auto",
+        showSidebar 
+          ? "grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-12 max-w-[1800px] px-8"
+          : "max-w-none px-6",  // Augmente le padding pour les pages sans sidebar
         className
       )}>
-        <div className="min-w-0">
+        <div className="w-full">
           {children}
         </div>
         

@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Control - Call Times</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        /* Header Navigation */
+        .header {
+            background: #000;
+            border-bottom: 1px solid #333;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            font-weight: 900;
+            font-size: 1.5rem;
+            line-height: 0.85;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+        
+        .nav-main {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+        }
+        
+        .nav-main a {
+            color: #a3a3a3;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.95rem;
+        }
+        
+        .nav-main a.active {
+            color: #fff;
+            background: #1a1a1a;
+        }
+        
+        .nav-main a:hover {
+            color: #fff;
+            background: #111;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .search-bar {
+            background: #111;
+            border: 1px solid #333;
+            padding: 0.625rem 1rem;
+            border-radius: 6px;
+            color: #fff;
+            width: 300px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .search-bar:focus {
+            outline: none;
+            border-color: #4ade80;
+            background: #1a1a1a;
+        }
+        
+        .btn-secondary {
+            background: #222;
+            color: #fff;
+            padding: 0.625rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            border: 1px solid #333;
+            cursor: pointer;
+        }
+        
+        .btn-secondary:hover {
+            background: #333;
+        }
+        
+        .btn-primary {
+            background: #4ade80;
+            color: #000;
+            padding: 0.625rem 1.25rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary:hover {
+            background: #22c55e;
+            transform: translateY(-1px);
+        }
+        
+        .user-avatar {
+            background: #4ade80;
+            color: #000;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        
+        /* Main Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 2.5rem;
+        }
+        
+        /* Page Header */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+        
+        .page-subtitle {
+            color: #a3a3a3;
+            font-size: 1rem;
+        }
+        
+        /* Toolbar */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .status-filters {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .filter-btn {
+            background: #111;
+            border: 1px solid #333;
+            color: #a3a3a3;
+            padding: 0.625rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .filter-btn:hover {
+            background: #1a1a1a;
+            border-color: #444;
+            color: #fff;
+        }
+        
+        .filter-btn.active {
+            background: #4ade80;
+            color: #000;
+            border-color: #4ade80;
+        }
+        
+        .filter-count {
+            margin-left: 0.5rem;
+            opacity: 0.7;
+        }
+        
+        /* Projects Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        /* Project Card */
+        .project-card {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .project-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #4ade80;
+            border-radius: 12px 0 0 12px;
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-4px);
+            background: #1a1a1a;
+            border-color: #444;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+        
+        .project-card:hover::before {
+            transform: scaleY(1);
+        }
+        
+        /* Card Header */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+        
+        /* Project Tags */
+        .project-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .project-tag {
+            padding: 0.25rem 0.625rem;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #666;
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            flex-shrink: 0;
+        }
+        
+        .status-badge.actif {
+            background: rgba(74, 222, 128, 0.15);
+            color: #4ade80;
+        }
+        
+        .status-badge.brouillon {
+            background: rgba(100, 116, 139, 0.15);
+            color: #94a3b8;
+        }
+        
+        .status-badge.archive {
+            background: rgba(71, 85, 105, 0.15);
+            color: #64748b;
+        }
+        
+        /* Title */
+        .project-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+        
+        /* Stats */
+        .project-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #222;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+        
+        /* Card Actions */
+        .card-actions {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #222;
+            display: flex;
+            gap: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .project-card:hover .card-actions {
+            opacity: 1;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 0.5rem;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #a3a3a3;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            background: #333;
+            color: #fff;
+        }
+        
+        .action-btn.primary {
+            background: #4ade80;
+            color: #000;
+            border-color: #4ade80;
+        }
+        
+        .action-btn.primary:hover {
+            background: #22c55e;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        
+        .sidebar-card {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .sidebar-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+        
+        .quick-action {
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .quick-action:hover {
+            background: #333;
+            border-color: #444;
+            transform: translateX(2px);
+        }
+        
+        .action-icon {
+            width: 36px;
+            height: 36px;
+            background: #4ade80;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: #000;
+        }
+        
+        .action-text {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        /* Stats Sidebar */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #222;
+        }
+        
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-label-sidebar {
+            color: #a3a3a3;
+            font-size: 0.9rem;
+        }
+        
+        .stat-value-sidebar {
+            color: #4ade80;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .project-card {
+            animation: fadeInUp 0.4s ease-out backwards;
+        }
+        
+        .project-card:nth-child(1) { animation-delay: 0.05s; }
+        .project-card:nth-child(2) { animation-delay: 0.1s; }
+        .project-card:nth-child(3) { animation-delay: 0.15s; }
+        .project-card:nth-child(4) { animation-delay: 0.2s; }
+        .project-card:nth-child(5) { animation-delay: 0.25s; }
+        .project-card:nth-child(6) { animation-delay: 0.3s; }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .projects-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+            
+            .status-filters {
+                flex-wrap: wrap;
+            }
+            
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">CALL<br>TIMES</div>
+            
+            <nav>
+                <ul class="nav-main">
+                    <li><a href="#">Dashboard</a></li>
+                    <li><a href="#" class="active">Projets</a></li>
+                    <li><a href="#">Contacts</a></li>
+                    <li><a href="#">Analytics</a></li>
+                </ul>
+            </nav>
+            
+            <div class="header-right">
+                <input type="text" class="search-bar" placeholder="Rechercher projets...">
+                <button class="btn-secondary">Import CSV</button>
+                <button class="btn-primary">Nouveau Projet</button>
+                <div class="user-avatar">SB</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Main Content -->
+        <main>
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Mission Control</h1>
+                <p class="page-subtitle">Coordonnez vos productions comme un général d'armée</p>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <div class="status-filters">
+                    <button class="filter-btn active">
+                        <span>Tous</span>
+                        <span class="filter-count">(5)</span>
+                    </button>
+                    <button class="filter-btn">
+                        <span>Actifs</span>
+                        <span class="filter-count">(3)</span>
+                    </button>
+                    <button class="filter-btn">
+                        <span>Brouillons</span>
+                        <span class="filter-count">(1)</span>
+                    </button>
+                    <button class="filter-btn">
+                        <span>Archivés</span>
+                        <span class="filter-count">(1)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Projects Grid -->
+            <div class="projects-grid">
+                <!-- Project Card 1 -->
+                <div class="project-card">
+                    <div class="card-header">
+                        <div class="project-tags">
+                            <span class="project-tag">Commercial</span>
+                            <span class="project-tag">Sport</span>
+                        </div>
+                        <span class="status-badge actif">Actif</span>
+                    </div>
+                    
+                    <h3 class="project-title">Commercial Nike Air Max</h3>
+                    
+                    <div class="project-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">8</div>
+                            <div class="stat-label">Documents</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">3</div>
+                            <div class="stat-label">Call Sheets</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">24MB</div>
+                            <div class="stat-label">Poids</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button class="action-btn primary">Ouvrir</button>
+                        <button class="action-btn">Options</button>
+                    </div>
+                </div>
+
+                <!-- Project Card 2 -->
+                <div class="project-card">
+                    <div class="card-header">
+                        <div class="project-tags">
+                            <span class="project-tag">Mode</span>
+                            <span class="project-tag">Campagne</span>
+                        </div>
+                        <span class="status-badge actif">Actif</span>
+                    </div>
+                    
+                    <h3 class="project-title">Shooting Mode Printemps</h3>
+                    
+                    <div class="project-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">15</div>
+                            <div class="stat-label">Documents</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">5</div>
+                            <div class="stat-label">Call Sheets</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">42MB</div>
+                            <div class="stat-label">Poids</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button class="action-btn primary">Ouvrir</button>
+                        <button class="action-btn">Options</button>
+                    </div>
+                </div>
+
+                <!-- Project Card 3 -->
+                <div class="project-card">
+                    <div class="card-header">
+                        <div class="project-tags">
+                            <span class="project-tag">Clip</span>
+                            <span class="project-tag">Musical</span>
+                        </div>
+                        <span class="status-badge brouillon">Brouillon</span>
+                    </div>
+                    
+                    <h3 class="project-title">Clip Musical "Lumière"</h3>
+                    
+                    <div class="project-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">6</div>
+                            <div class="stat-label">Documents</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">2</div>
+                            <div class="stat-label">Call Sheets</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">18MB</div>
+                            <div class="stat-label">Poids</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button class="action-btn primary">Ouvrir</button>
+                        <button class="action-btn">Options</button>
+                    </div>
+                </div>
+
+                <!-- Project Card 4 -->
+                <div class="project-card">
+                    <div class="card-header">
+                        <div class="project-tags">
+                            <span class="project-tag">Automobile</span>
+                            <span class="project-tag">TV</span>
+                        </div>
+                        <span class="status-badge actif">Actif</span>
+                    </div>
+                    
+                    <h3 class="project-title">Pub Automobile Renault</h3>
+                    
+                    <div class="project-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">12</div>
+                            <div class="stat-label">Documents</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">4</div>
+                            <div class="stat-label">Call Sheets</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">35MB</div>
+                            <div class="stat-label">Poids</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button class="action-btn primary">Ouvrir</button>
+                        <button class="action-btn">Options</button>
+                    </div>
+                </div>
+
+                <!-- Project Card 5 -->
+                <div class="project-card">
+                    <div class="card-header">
+                        <div class="project-tags">
+                            <span class="project-tag">Corporate</span>
+                        </div>
+                        <span class="status-badge archive">Archivé</span>
+                    </div>
+                    
+                    <h3 class="project-title">Vidéo Corporate Q1</h3>
+                    
+                    <div class="project-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">4</div>
+                            <div class="stat-label">Documents</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">1</div>
+                            <div class="stat-label">Call Sheets</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">9MB</div>
+                            <div class="stat-label">Poids</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button class="action-btn primary">Ouvrir</button>
+                        <button class="action-btn">Options</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Actions -->
+            <div class="sidebar-card">
+                <h3 class="sidebar-title">Actions</h3>
+                
+                <button class="quick-action">
+                    <div class="action-icon">➕</div>
+                    <span class="action-text">Nouveau Projet</span>
+                </button>
+                
+                <button class="quick-action">
+                    <div class="action-icon">📊</div>
+                    <span class="action-text">Analytics</span>
+                </button>
+                
+                <button class="quick-action">
+                    <div class="action-icon">👥</div>
+                    <span class="action-text">Équipe</span>
+                </button>
+            </div>
+
+            <!-- Statistics -->
+            <div class="sidebar-card">
+                <h3 class="sidebar-title">Statistiques</h3>
+                
+                <div class="stat-row">
+                    <span class="stat-label-sidebar">Projets Actifs</span>
+                    <span class="stat-value-sidebar">12</span>
+                </div>
+                
+                <div class="stat-row">
+                    <span class="stat-label-sidebar">Call Sheets</span>
+                    <span class="stat-value-sidebar">34</span>
+                </div>
+                
+                <div class="stat-row">
+                    <span class="stat-label-sidebar">Équipe Total</span>
+                    <span class="stat-value-sidebar">247</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

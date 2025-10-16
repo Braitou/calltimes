@@ -11,6 +11,8 @@ import { LogoUpload } from '@/components/ui/logo-upload'
 import { PDFGenerator } from '@/components/ui/pdf-generator'
 import { ContactSelectorModal, type Contact } from '@/components/contacts/contact-selector-modal'
 import { Mail } from 'lucide-react'
+import { toast } from 'sonner'
+import { getCallSheetById, updateCallSheet as updateCallSheetInDB } from '@/lib/services/call-sheets'
 
 // Mock data pour le développement
 const mockCallSheet = {
@@ -65,6 +67,8 @@ interface EditorSidebarProps {
   callSheet: typeof mockCallSheet
   onUpdateCallSheet: (updates: Partial<typeof mockCallSheet>) => void
   onUpdateScheduleItem: (index: number, updates: Partial<typeof mockCallSheet.schedule[0]>) => void
+  onMoveScheduleItem: (index: number, direction: 'up' | 'down') => void
+  timeErrors: { [key: string]: string }
   onAddLocation: () => void
   onUpdateLocation: (index: number, updates: Partial<typeof mockCallSheet.locations[0]>) => void
   onRemoveLocation: (index: number) => void
@@ -83,6 +87,8 @@ function EditorSidebar({
   callSheet, 
   onUpdateCallSheet, 
   onUpdateScheduleItem,
+  onMoveScheduleItem,
+  timeErrors,
   onAddLocation,
   onUpdateLocation,
   onRemoveLocation,
@@ -1188,26 +1194,102 @@ function PreviewArea({ callSheet }: { callSheet: typeof mockCallSheet }) {
 export default function CallSheetEditorPage() {
   const params = useParams()
   const router = useRouter()
+  const callSheetId = params.id as string
   const [activeSection, setActiveSection] = useState<Section>('informations')
   const [callSheet, setCallSheet] = useState(mockCallSheet)
   const [timeErrors, setTimeErrors] = useState<{ [key: string]: string }>({})
+  const [isLoading, setIsLoading] = useState(true)
+  const [projectId, setProjectId] = useState<string | null>(null)
   
   // États pour les modals de sélection de contacts
   const [contactSelectorOpen, setContactSelectorOpen] = useState(false)
   const [contactSelectorMode, setContactSelectorMode] = useState<'important' | 'team'>('important')
 
-  // Auto-save avec mock function (sera remplacé par vraie API plus tard)
-  const mockSave = async (data: typeof mockCallSheet) => {
-    // Simuler un délai de sauvegarde
-    await new Promise(resolve => setTimeout(resolve, 800))
-    // Auto-save silencieux
+  // ✅ Charger le call sheet depuis Supabase au montage
+  useEffect(() => {
+    loadCallSheet()
+  }, [callSheetId])
+
+  const loadCallSheet = async () => {
+    setIsLoading(true)
+    try {
+      const result = await getCallSheetById(callSheetId)
+      
+      if (!result.success || !result.data) {
+        toast.error('Call Sheet introuvable')
+        router.push('/projects')
+        return
+      }
+
+      const data = result.data
+      
+      // Sauvegarder le project_id pour le lien "Retour"
+      setProjectId(data.project_id)
+      
+      // Mapper les données Supabase vers le format de l'éditeur
+      setCallSheet({
+        id: data.id,
+        title: data.title,
+        date: data.shoot_date || new Date().toISOString().split('T')[0],
+        project_name: '', // On pourrait charger le nom du projet si besoin
+        locations: data.editor_data?.locations || [],
+        important_contacts: data.editor_data?.important_contacts || [],
+        schedule: data.editor_data?.schedule || [
+          { id: 1, title: 'Call time — Production', time: '08:00' },
+          { id: 2, title: 'Start shooting', time: '09:30' },
+          { id: 3, title: 'Lunch', time: '13:00' },
+          { id: 4, title: 'Wrap', time: '18:00' }
+        ],
+        team: data.editor_data?.team || [],
+        logo_production_url: data.logo_production_url,
+        logo_marque_url: data.logo_marque_url,
+        logo_agence_url: data.logo_agence_url,
+        notes: data.notes || ''
+      })
+      
+      console.log('✅ Call Sheet chargé depuis Supabase:', data)
+    } catch (error) {
+      console.error('❌ Erreur chargement call sheet:', error)
+      toast.error('Erreur lors du chargement')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // ✅ Fonction de sauvegarde dans Supabase
+  const saveToSupabase = async (data: typeof mockCallSheet) => {
+    try {
+      const result = await updateCallSheetInDB(callSheetId, {
+        title: data.title,
+        shoot_date: data.date,
+        notes: data.notes,
+        logo_production_url: data.logo_production_url,
+        logo_marque_url: data.logo_marque_url,
+        logo_agence_url: data.logo_agence_url,
+        editor_data: {
+          locations: data.locations,
+          important_contacts: data.important_contacts,
+          schedule: data.schedule,
+          team: data.team
+        }
+      })
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save')
+      }
+      
+      console.log('💾 Sauvegardé dans Supabase')
+    } catch (error) {
+      console.error('❌ Erreur sauvegarde:', error)
+      throw error
+    }
   }
 
   const { status: saveStatus, lastSaved, save: forceSave, error: saveError } = useAutoSave({
     data: callSheet,
-    onSave: mockSave,
-    debounceMs: 500,
-    enabled: true
+    onSave: saveToSupabase,
+    debounceMs: 2000, // Sauvegarde après 2 secondes d'inactivité
+    enabled: !isLoading && callSheet.id !== '1' // Activer seulement après le chargement réel (pas mock)
   })
 
   // Handler pour mettre à jour les données en temps réel
@@ -1439,7 +1521,7 @@ export default function CallSheetEditorPage() {
       <header className="bg-call-times-black border-b border-call-times-gray-light px-6 py-3 flex justify-between items-center">
         <div className="flex items-center gap-4">
           <Link 
-            href="/projects" 
+            href={projectId ? `/projects/${projectId}` : '/projects'} 
             className="text-call-times-text-muted hover:text-white transition-all flex items-center gap-2 text-sm"
           >
             ← Retour au projet
@@ -1468,6 +1550,7 @@ export default function CallSheetEditorPage() {
             }`} />
             <span className="text-sm text-call-times-text-secondary">
               {saveStatus === 'saved' && lastSaved ? `Sauvegardé ${lastSaved.toLocaleTimeString()}` :
+               saveStatus === 'saved' ? 'Sauvegardé' :
                saveStatus === 'saving' ? 'Sauvegarde...' :
                saveStatus === 'unsaved' ? 'Non sauvegardé' :
                'Erreur de sauvegarde'}
@@ -1476,12 +1559,11 @@ export default function CallSheetEditorPage() {
         </div>
         
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="bg-call-times-gray-light border-call-times-gray-medium text-white hover:bg-call-times-gray-medium">
-            Brouillon
-          </Button>
-          <Button className="bg-call-times-accent text-black hover:bg-call-times-accent-hover">
-            Finaliser Call Sheet
-          </Button>
+          <Link href={`/call-sheets/${callSheetId}/finalize`}>
+            <Button className="bg-call-times-accent text-black hover:bg-call-times-accent-hover">
+              Finaliser Call Sheet
+            </Button>
+          </Link>
         </div>
       </header>
 
@@ -1493,6 +1575,8 @@ export default function CallSheetEditorPage() {
           callSheet={callSheet}
           onUpdateCallSheet={updateCallSheet}
           onUpdateScheduleItem={updateScheduleItem}
+          onMoveScheduleItem={moveScheduleItem}
+          timeErrors={timeErrors}
           onAddLocation={addLocation}
           onUpdateLocation={updateLocation}
           onRemoveLocation={removeLocation}

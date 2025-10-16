@@ -1,8 +1,8 @@
 ﻿'use client'
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { PageLayout, GridLayout, SectionHeader, Sidebar } from '@/components/layout'
+import { Card, CardContent } from '@/components/ui/card'
+import { PageLayout, SectionHeader, Sidebar } from '@/components/layout'
+import Link from 'next/link'
 
 // Mock data for development
 const mockUser = {
@@ -11,193 +11,254 @@ const mockUser = {
 }
 
 const quickActions = [
-  { icon: '📁', label: 'Nouveau Projet', href: '/projects/new' },
-  { icon: '⚙️', label: 'Manager Projets', href: '/projects' },
-  { icon: '👥', label: 'Gerer Contacts', href: '/contacts' },
-  { icon: '✏️', label: 'Editeur Call Sheet', href: '/call-sheets/1/edit' },
+  { icon: '📁', label: 'New Project', href: '/projects/new' },
+  { icon: '📂', label: 'Manage Projects', href: '/projects' },
+  { icon: '👥', label: 'Contacts', href: '/contacts' },
 ]
 
 const stats = [
-  { label: 'Projets Actifs', value: '12' },
-  { label: 'Contacts', value: '247' },
+  { label: 'Projects', value: '1' },
+  { label: 'Storage', value: '0 MB' },
 ]
 
 export default function DashboardPage() {
-  const sidebar = (
-    <Sidebar
-      title="Command Center"
-      quickActions={quickActions}
-      stats={stats}
-    />
-  )
-
   return (
-    <PageLayout user={mockUser} sidebar={sidebar}>
-      <SectionHeader
-        title="COMMAND CENTER"
-        subtitle="Gerez vos productions comme un pro"
-        action={
-          <Button className="bg-white text-black hover:bg-gray-100 font-bold text-sm uppercase tracking-wider">
-            Nouveau Projet
-          </Button>
-        }
-      />
-
-      {/* Quick Actions */}
-      <section className="mb-8">
-        <GridLayout cols={4}>
-          <Card className="bg-call-times-gray-dark border-call-times-gray-light hover:bg-call-times-gray-medium transition-all cursor-pointer transform hover:-translate-y-1">
-            <CardContent className="p-8">
-              <div className="w-12 h-12 bg-call-times-accent rounded-lg flex items-center justify-center text-2xl mb-6">
-                📁
-              </div>
-              <h3 className="text-white font-bold text-xl mb-2 uppercase tracking-tight">
-                Nouveau Projet
-              </h3>
-              <p className="text-call-times-text-muted text-sm">
-                Lancez une nouvelle production
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-call-times-gray-dark border-call-times-gray-light hover:bg-call-times-gray-medium transition-all cursor-pointer transform hover:-translate-y-1">
-            <CardContent className="p-8">
-              <div className="w-12 h-12 bg-call-times-accent rounded-lg flex items-center justify-center text-2xl mb-6">
-                ⚙️
-              </div>
-              <h3 className="text-white font-bold text-xl mb-2 uppercase tracking-tight">
-                Manager Projets
-              </h3>
-              <p className="text-call-times-text-muted text-sm">
-                Controlez tous vos projets
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-call-times-gray-dark border-call-times-gray-light hover:bg-call-times-gray-medium transition-all cursor-pointer transform hover:-translate-y-1">
-            <CardContent className="p-8">
-              <div className="w-12 h-12 bg-call-times-accent rounded-lg flex items-center justify-center text-2xl mb-6">
-                👥
-              </div>
-              <h3 className="text-white font-bold text-xl mb-2 uppercase tracking-tight">
-                Gerer Contacts
-              </h3>
-              <p className="text-call-times-text-muted text-sm">
-                Votre repertoire professionnel
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-call-times-gray-dark border-call-times-gray-light hover:bg-call-times-gray-medium transition-all cursor-pointer transform hover:-translate-y-1">
-            <CardContent className="p-8">
-              <div className="w-12 h-12 bg-call-times-accent rounded-lg flex items-center justify-center text-2xl mb-6">
-                ✏️
-              </div>
-              <h3 className="text-white font-bold text-xl mb-2 uppercase tracking-tight">
-                Editeur Call Sheet
-              </h3>
-              <p className="text-call-times-text-muted text-sm">
-                Creez et editez vos call sheets
-              </p>
-            </CardContent>
-          </Card>
-        </GridLayout>
+    <PageLayout user={mockUser} showSidebar={false}>
+      {/* Welcome Section - Optimized */}
+      <section className="mb-12">
+        <h1 className="text-[2.5rem] font-black leading-none mb-3 uppercase tracking-tight">
+          COMMAND CENTER
+        </h1>
+        <p className="text-base text-[#a3a3a3] font-normal">
+          Manage your productions like a pro
+        </p>
       </section>
 
-      {/* Stats Overview */}
-      <section className="mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-call-times-gray-dark border-call-times-gray-light">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-call-times-text-muted text-sm font-medium uppercase tracking-wider">
-                    Projets Actifs
-                  </p>
-                  <p className="text-3xl font-black text-white">12</p>
+      {/* Quick Actions - 3 cards with enhanced hover effects - rectangles */}
+      <section className="mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {/* Card 1: New Project */}
+          <Link href="/projects/new" className="group">
+            <Card className="relative bg-call-times-gray-dark border-call-times-gray-light transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] cursor-pointer h-full overflow-hidden
+              hover:bg-[#1a1a1a] hover:border-[#444] hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)]
+              before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[3px] before:bg-call-times-accent 
+              before:scale-y-0 before:transition-transform before:duration-300 before:ease-out
+              hover:before:scale-y-100
+              animate-[fadeIn_0.4s_ease-out_0.1s_backwards]">
+              <CardContent className="p-8">
+                <div className="flex items-center gap-5">
+                  <div className="w-14 h-14 bg-gradient-to-br from-call-times-accent to-[#22c55e] rounded-[10px] flex items-center justify-center text-[1.75rem] flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-[5deg]">
+                    📁
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-white font-bold text-[1.25rem] mb-2 leading-tight">
+                      New Project
+                    </h3>
+                    <p className="text-[#a3a3a3] text-[0.9rem] leading-[1.5]">
+                      Create a new production project and start organizing your shoot
+                    </p>
+                  </div>
                 </div>
-                <div className="text-call-times-accent text-2xl">📊</div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Card 2: Manage Projects */}
+          <Link href="/projects" className="group">
+            <Card className="relative bg-call-times-gray-dark border-call-times-gray-light transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] cursor-pointer h-full overflow-hidden
+              hover:bg-[#1a1a1a] hover:border-[#444] hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)]
+              before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[3px] before:bg-call-times-accent 
+              before:scale-y-0 before:transition-transform before:duration-300 before:ease-out
+              hover:before:scale-y-100
+              animate-[fadeIn_0.4s_ease-out_0.2s_backwards]">
+              <CardContent className="p-8">
+                <div className="flex items-center gap-5">
+                  <div className="w-14 h-14 bg-gradient-to-br from-call-times-accent to-[#22c55e] rounded-[10px] flex items-center justify-center text-[1.75rem] flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-[5deg]">
+                    📂
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-white font-bold text-[1.25rem] mb-2 leading-tight">
+                      Manage Projects
+                    </h3>
+                    <p className="text-[#a3a3a3] text-[0.9rem] leading-[1.5]">
+                      View and manage all your existing production projects
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Card 3: Contacts */}
+          <Link href="/contacts" className="group">
+            <Card className="relative bg-call-times-gray-dark border-call-times-gray-light transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] cursor-pointer h-full overflow-hidden
+              hover:bg-[#1a1a1a] hover:border-[#444] hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)]
+              before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[3px] before:bg-call-times-accent 
+              before:scale-y-0 before:transition-transform before:duration-300 before:ease-out
+              hover:before:scale-y-100
+              animate-[fadeIn_0.4s_ease-out_0.3s_backwards]">
+              <CardContent className="p-8">
+                <div className="flex items-center gap-5">
+                  <div className="w-14 h-14 bg-gradient-to-br from-call-times-accent to-[#22c55e] rounded-[10px] flex items-center justify-center text-[1.75rem] flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-[5deg]">
+                    👥
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-white font-bold text-[1.25rem] mb-2 leading-tight">
+                      Contacts
+                    </h3>
+                    <p className="text-[#a3a3a3] text-[0.9rem] leading-[1.5]">
+                      Access your professional directory and organize your crew
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+      </section>
+
+      {/* Overview Stats - Enhanced with hover */}
+      <section className="mb-16">
+        <h2 className="text-white font-bold text-2xl uppercase tracking-[0.025em] mb-8">
+          Overview
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <Card className="bg-call-times-gray-dark border-call-times-gray-light transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] cursor-pointer hover:bg-[#1a1a1a] hover:border-call-times-accent hover:-translate-y-0.5">
+            <CardContent className="p-8">
+              <div className="text-center">
+                <p className="text-call-times-accent text-[2.5rem] font-black mb-2 leading-none">1</p>
+                <p className="text-[#a3a3a3] text-[0.875rem] font-medium uppercase tracking-[0.05em]">
+                  Active Projects
+                </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-call-times-gray-dark border-call-times-gray-light">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-call-times-text-muted text-sm font-medium uppercase tracking-wider">
-                    Call Sheets
-                  </p>
-                  <p className="text-3xl font-black text-white">47</p>
-                </div>
-                <div className="text-call-times-accent text-2xl">📋</div>
+          <Card className="bg-call-times-gray-dark border-call-times-gray-light transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] cursor-pointer hover:bg-[#1a1a1a] hover:border-call-times-accent hover:-translate-y-0.5">
+            <CardContent className="p-8">
+              <div className="text-center">
+                <p className="text-call-times-accent text-[2.5rem] font-black mb-2 leading-none">1</p>
+                <p className="text-[#a3a3a3] text-[0.875rem] font-medium uppercase tracking-[0.05em]">
+                  Contacts
+                </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-call-times-gray-dark border-call-times-gray-light">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-call-times-text-muted text-sm font-medium uppercase tracking-wider">
-                    Contacts
-                  </p>
-                  <p className="text-3xl font-black text-white">247</p>
-                </div>
-                <div className="text-call-times-accent text-2xl">👥</div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-call-times-gray-dark border-call-times-gray-light">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-call-times-text-muted text-sm font-medium uppercase tracking-wider">
-                    Emails Envoyes
-                  </p>
-                  <p className="text-3xl font-black text-white">1.2k</p>
-                </div>
-                <div className="text-call-times-accent text-2xl">✉️</div>
+          <Card className="bg-call-times-gray-dark border-call-times-gray-light transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] cursor-pointer hover:bg-[#1a1a1a] hover:border-call-times-accent hover:-translate-y-0.5">
+            <CardContent className="p-8">
+              <div className="text-center">
+                <p className="text-call-times-accent text-[2.5rem] font-black mb-2 leading-none">0</p>
+                <p className="text-[#a3a3a3] text-[0.875rem] font-medium uppercase tracking-[0.05em]">
+                  Call Sheets
+                </p>
               </div>
             </CardContent>
           </Card>
         </div>
       </section>
 
-      {/* Recent Activity */}
-      <section>
-        <h2 className="text-white font-bold text-xl uppercase tracking-wider mb-6">
-          Activite Recente
-        </h2>
+      {/* Recent Activity - Two columns */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Recent Projects */}
         <Card className="bg-call-times-gray-dark border-call-times-gray-light">
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center gap-4 p-4 bg-call-times-gray-medium rounded">
-                <div className="w-2 h-2 bg-call-times-accent rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-white font-medium">Commercial Nike Air Max - Call Sheet creee</p>
-                  <p className="text-call-times-text-muted text-sm">Il y a 2 heures</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 p-4 bg-call-times-gray-medium rounded">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-white font-medium">15 nouveaux contacts ajoutes</p>
-                  <p className="text-call-times-text-muted text-sm">Il y a 1 jour</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 p-4 bg-call-times-gray-medium rounded">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-white font-medium">Shooting Mode Printemps - PDF envoye</p>
-                  <p className="text-call-times-text-muted text-sm">Il y a 2 jours</p>
-                </div>
-              </div>
+          <CardContent className="p-8">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-white font-bold text-lg uppercase tracking-[0.025em]">
+                Recent Projects
+              </h3>
+              <Link href="/projects" className="text-call-times-accent text-sm font-medium hover:text-[#22c55e] transition-colors">
+                View all →
+              </Link>
             </div>
+            <ul className="space-y-0">
+              <li className="py-5 border-b border-[#222] flex justify-between items-center transition-all duration-200 hover:pl-2 hover:bg-[rgba(74,222,128,0.02)]">
+                <div>
+                  <h4 className="text-white font-semibold text-[0.95rem] mb-1.5">Nike Air Max Campaign</h4>
+                  <p className="text-[#a3a3a3] text-[0.85rem]">3 call sheets • 8 files</p>
+                </div>
+                <span className="px-3.5 py-1.5 rounded-md bg-[rgba(74,222,128,0.15)] text-call-times-accent text-xs font-semibold uppercase tracking-wider">
+                  Active
+                </span>
+              </li>
+              <li className="py-5 border-b border-[#222] flex justify-between items-center transition-all duration-200 hover:pl-2 hover:bg-[rgba(74,222,128,0.02)]">
+                <div>
+                  <h4 className="text-white font-semibold text-[0.95rem] mb-1.5">Spring Fashion Shoot</h4>
+                  <p className="text-[#a3a3a3] text-[0.85rem]">5 call sheets • 12 files</p>
+                </div>
+                <span className="px-3.5 py-1.5 rounded-md bg-[rgba(74,222,128,0.15)] text-call-times-accent text-xs font-semibold uppercase tracking-wider">
+                  Active
+                </span>
+              </li>
+              <li className="py-5 flex justify-between items-center transition-all duration-200 hover:pl-2 hover:bg-[rgba(74,222,128,0.02)]">
+                <div>
+                  <h4 className="text-white font-semibold text-[0.95rem] mb-1.5">Music Video - Artist X</h4>
+                  <p className="text-[#a3a3a3] text-[0.85rem]">2 call sheets • 6 files</p>
+                </div>
+                <span className="px-3.5 py-1.5 rounded-md bg-[#222] text-[#a3a3a3] text-xs font-semibold uppercase tracking-wider">
+                  Draft
+                </span>
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
+
+        {/* Recent Call Sheets */}
+        <Card className="bg-call-times-gray-dark border-call-times-gray-light">
+          <CardContent className="p-8">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-white font-bold text-lg uppercase tracking-[0.025em]">
+                Recent Call Sheets
+              </h3>
+              <Link href="/projects" className="text-call-times-accent text-sm font-medium hover:text-[#22c55e] transition-colors">
+                View all →
+              </Link>
+            </div>
+            <ul className="space-y-0">
+              <li className="py-5 border-b border-[#222] flex justify-between items-center transition-all duration-200 hover:pl-2 hover:bg-[rgba(74,222,128,0.02)]">
+                <div>
+                  <h4 className="text-white font-semibold text-[0.95rem] mb-1.5">Nike Air Max - Day 1</h4>
+                  <p className="text-[#a3a3a3] text-[0.85rem]">September 25, 2025 • Studio Harcourt</p>
+                </div>
+                <span className="px-3.5 py-1.5 rounded-md bg-[rgba(74,222,128,0.15)] text-call-times-accent text-xs font-semibold uppercase tracking-wider">
+                  Sent
+                </span>
+              </li>
+              <li className="py-5 border-b border-[#222] flex justify-between items-center transition-all duration-200 hover:pl-2 hover:bg-[rgba(74,222,128,0.02)]">
+                <div>
+                  <h4 className="text-white font-semibold text-[0.95rem] mb-1.5">Nike Air Max - Day 2</h4>
+                  <p className="text-[#a3a3a3] text-[0.85rem]">September 26, 2025 • Location outdoor</p>
+                </div>
+                <span className="px-3.5 py-1.5 rounded-md bg-[#222] text-[#a3a3a3] text-xs font-semibold uppercase tracking-wider">
+                  Draft
+                </span>
+              </li>
+              <li className="py-5 flex justify-between items-center transition-all duration-200 hover:pl-2 hover:bg-[rgba(74,222,128,0.02)]">
+                <div>
+                  <h4 className="text-white font-semibold text-[0.95rem] mb-1.5">Pickup Shots</h4>
+                  <p className="text-[#a3a3a3] text-[0.85rem]">September 29, 2025 • Studio B</p>
+                </div>
+                <span className="px-3.5 py-1.5 rounded-md bg-[#222] text-[#a3a3a3] text-xs font-semibold uppercase tracking-wider">
+                  Draft
+                </span>
+              </li>
+            </ul>
           </CardContent>
         </Card>
       </section>
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </PageLayout>
   )
 }

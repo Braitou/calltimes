@@ -42,7 +42,7 @@ export function Header({ user }: HeaderProps) {
 
   return (
     <header className="bg-call-times-black border-b border-call-times-gray-light sticky top-0 z-50">
-      <div className="mx-auto max-w-7xl px-8 py-4">
+      <div className="w-full px-8 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/dashboard" className="text-white">
