@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 import { Database } from './types'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://demo.supabase.co'
@@ -9,9 +9,13 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
   console.warn('⚠️  Supabase not configured - using demo mode')
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+// Client pour les composants client (avec gestion cookies automatique)
+export const supabase = createBrowserClient<Database>(
+  supabaseUrl,
+  supabaseAnonKey
+)
 
 // Client for use in client components
 export function createSupabaseClient() {
-  return createClient<Database>(supabaseUrl, supabaseAnonKey)
+  return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Download, Trash2, Plus, Maximize2 } from 'lucide-react'
+import { Download, Trash2, Plus, Maximize2, Mail, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { DesktopItem, TeamMember } from '@/types/project-hub'
@@ -10,13 +10,25 @@ import { FilePreview } from './FilePreview'
 import { getFileType, formatBytes, formatRelativeDate, getInitials } from '@/lib/utils/file-helpers'
 import { cn } from '@/lib/utils'
 
+export interface PendingInvitation {
+  id: string
+  email: string
+  role: 'owner' | 'editor' | 'viewer'
+  invited_at: string
+}
+
 interface PreviewSidebarProps {
   selectedItem: DesktopItem | null
   teamMembers: TeamMember[]
+  pendingInvitations?: PendingInvitation[]
   onDownload?: (item: DesktopItem) => void
   onDelete?: (item: DesktopItem) => void
   onInviteMember?: (email: string) => void
+  onOpenInviteModal?: () => void
+  onRevokeInvitation?: (invitationId: string) => void
+  onRemoveMember?: (memberId: string) => void
   onOpenFullscreen?: (item: DesktopItem) => void
+  isReadOnly?: boolean
 }
 
 /**
@@ -25,19 +37,16 @@ interface PreviewSidebarProps {
 export function PreviewSidebar({
   selectedItem,
   teamMembers,
+  pendingInvitations = [],
   onDownload,
   onDelete,
   onInviteMember,
-  onOpenFullscreen
+  onOpenInviteModal,
+  onRevokeInvitation,
+  onRemoveMember,
+  onOpenFullscreen,
+  isReadOnly = false
 }: PreviewSidebarProps) {
-  const [inviteEmail, setInviteEmail] = useState('')
-
-  const handleInvite = () => {
-    if (inviteEmail && onInviteMember) {
-      onInviteMember(inviteEmail)
-      setInviteEmail('')
-    }
-  }
 
   // Extraire les infos selon le type d'item
   const getItemInfo = () => {
@@ -166,7 +175,7 @@ export function PreviewSidebar({
                   Télécharger
                 </Button>
               )}
-              {onDelete && (
+              {onDelete && !isReadOnly && (
                 <Button
                   onClick={() => onDelete(selectedItem)}
                   variant="outline"
@@ -190,29 +199,19 @@ export function PreviewSidebar({
             Team ({teamMembers.length})
           </h4>
           
-          {/* Input invite */}
-          {onInviteMember && (
-            <div className="flex gap-2 mb-4">
-              <Input
-                type="email"
-                placeholder="email@exemple.com"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleInvite()}
-                className="flex-1 bg-[#111] border-[#333] text-white text-sm focus:border-green-400"
-              />
-              <Button
-                onClick={handleInvite}
-                disabled={!inviteEmail}
-                className="bg-green-400 hover:bg-green-500 text-black px-3"
-              >
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
+          {/* Bouton Invite - Désactivé en lecture seule */}
+          {onOpenInviteModal && !isReadOnly && (
+            <Button
+              onClick={onOpenInviteModal}
+              className="w-full bg-green-400 hover:bg-green-500 text-black font-bold mb-4 text-sm"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Inviter un membre
+            </Button>
           )}
           
           {/* Liste membres */}
-          <div className="space-y-2">
+          <div className="space-y-2 mb-4">
             {teamMembers.map((member) => (
               <div
                 key={member.id}
@@ -233,9 +232,57 @@ export function PreviewSidebar({
                     {member.role === 'owner' ? 'Owner' : member.role === 'editor' ? 'Editor' : 'Viewer'}
                   </div>
                 </div>
+                {/* Bouton supprimer membre (sauf pour les owners et si pas en lecture seule) */}
+                {onRemoveMember && !isReadOnly && member.role !== 'owner' && (
+                  <button
+                    onClick={() => onRemoveMember(member.id)}
+                    className="w-6 h-6 rounded-full bg-red-900/20 hover:bg-red-900/40 flex items-center justify-center text-red-400 transition-colors"
+                    title="Retirer du projet"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
               </div>
             ))}
           </div>
+
+          {/* Invitations en attente */}
+          {pendingInvitations.length > 0 && !isReadOnly && (
+            <>
+              <div className="border-t border-gray-800 pt-3 mb-3">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">
+                  Invitations en attente ({pendingInvitations.length})
+                </h5>
+              </div>
+              <div className="space-y-2">
+                {pendingInvitations.map((invitation) => (
+                  <div
+                    key={invitation.id}
+                    className="bg-[#0a0a0a] border border-yellow-900/30 rounded-md p-2 flex items-center gap-3"
+                  >
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-yellow-900/20 text-yellow-500">
+                      <Mail className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-xs truncate text-gray-300">{invitation.email}</div>
+                      <div className="text-[10px] text-yellow-600">
+                        {invitation.role === 'owner' ? 'Owner' : invitation.role === 'editor' ? 'Editor' : 'Viewer'} • En attente
+                      </div>
+                    </div>
+                    {onRevokeInvitation && (
+                      <button
+                        onClick={() => onRevokeInvitation(invitation.id)}
+                        className="w-6 h-6 rounded-full bg-red-900/20 hover:bg-red-900/40 flex items-center justify-center text-red-400 transition-colors"
+                        title="Révoquer l'invitation"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </aside>

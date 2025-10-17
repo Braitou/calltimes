@@ -6,20 +6,22 @@ import { toast } from 'sonner'
 import { Header } from '@/components/layout/Header'
 import { ToolsSidebar } from '@/components/project-hub/ToolsSidebar'
 import { DesktopCanvas } from '@/components/project-hub/DesktopCanvas'
-import { PreviewSidebar } from '@/components/project-hub/PreviewSidebar'
+import { PreviewSidebar, PendingInvitation } from '@/components/project-hub/PreviewSidebar'
 import { FolderWindow } from '@/components/project-hub/FolderWindow'
 import { ContextMenu } from '@/components/project-hub/ContextMenu'
 import { FileUploadModal } from '@/components/project-hub/FileUploadModal'
 import { FilePreviewModal } from '@/components/project-hub/FilePreviewModal'
+import { InviteProjectMemberModal } from '@/components/project-hub/InviteProjectMemberModal'
 import { DesktopItem, TeamMember } from '@/types/project-hub'
 import { ProjectFolder } from '@/lib/services/folders'
 import { getProjectById } from '@/lib/services/projects'
 import { getProjectFiles, updateFilePosition, moveFileToFolder, deleteFile } from '@/lib/services/files'
 import { getFoldersByProject, createFolder, updateFolderPosition, deleteFolder } from '@/lib/services/folders'
 import { getCallSheetsByProject, deleteCallSheet } from '@/lib/services/call-sheets'
-import { getProjectMembers, inviteProjectMember } from '@/lib/services/invitations'
+import { getProjectMembers, inviteProjectMember, getPendingInvitations, revokeInvitation, removeProjectMember } from '@/lib/services/invitations'
 import { formatBytes, getInitials, calculateInitialPosition } from '@/lib/utils/file-helpers'
 import { autoArrangeItems, downloadMultipleFiles } from '@/lib/utils/desktop-helpers'
+import { useProjectAccess } from '@/hooks/useUserAccess'
 
 /**
  * Page Project Hub - Desktop Canvas avec drag & drop
@@ -29,6 +31,9 @@ export default function ProjectHubPage() {
   const params = useParams()
   const router = useRouter()
   const projectId = params.id as string
+  
+  // Permissions utilisateur
+  const { canModify, isReadOnly, isGuestAccess, isLoading: permissionsLoading } = useProjectAccess(projectId)
 
   // État
   const [project, setProject] = useState<any>(null)
@@ -37,12 +42,15 @@ export default function ProjectHubPage() {
   const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set()) // Changé pour sélection multiple
   const [renamingItemId, setRenamingItemId] = useState<string | null>(null)
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [openFolder, setOpenFolder] = useState<{ folder: ProjectFolder; position: { x: number; y: number } } | null>(null)
   const [contextMenu, setContextMenu] = useState<{ item?: DesktopItem; position: { x: number; y: number } } | null>(null) // item optionnel pour canvas
   const [showUploadModal, setShowUploadModal] = useState(false)
+  const [showInviteModal, setShowInviteModal] = useState(false)
   const [fullscreenPreview, setFullscreenPreview] = useState<DesktopItem | null>(null)
   const [selectionBox, setSelectionBox] = useState<{ start: { x: number; y: number }; end: { x: number; y: number } } | null>(null)
+  const [showCallSheetFolderWarning, setShowCallSheetFolderWarning] = useState(false)
   
   // Debounce pour la sauvegarde des positions
   const savePositionTimeoutRef = useRef<NodeJS.Timeout>()
@@ -115,7 +123,11 @@ export default function ProjectHubPage() {
         : []
       setTeamMembers(mappedMembers)
 
-      // 6. Convertir en DesktopItems
+      // 6. Charger les invitations en attente
+      const invitationsResult = await getPendingInvitations(projectId)
+      setPendingInvitations(invitationsResult.success ? invitationsResult.data : [])
+
+      // 7. Convertir en DesktopItems
       const items: DesktopItem[] = [
         // Dossiers (avec compteur de fichiers)
         ...folders.map(folder => ({
@@ -135,15 +147,15 @@ export default function ProjectHubPage() {
           y: file.position_y,
           data: file
         })),
-        // Call Sheets
-        ...callSheets.map(cs => ({
+        // Call Sheets (masqués pour les guests en lecture seule)
+        ...(isReadOnly ? [] : callSheets.map(cs => ({
           id: cs.id,
           type: 'callsheet' as const,
           name: cs.title,
           x: 0, // TODO: ajouter position_x/y aux call_sheets
           y: 0,
           data: cs
-        }))
+        })))
       ]
 
       // Positionner les items sans position
@@ -193,6 +205,9 @@ export default function ProjectHubPage() {
 
   // Handler pour le déplacement d'un item
   const handleItemMove = useCallback((itemId: string, x: number, y: number) => {
+    // Désactiver si lecture seule
+    if (isReadOnly) return
+    
     // Mise à jour optimiste
     setDesktopItems(prev => prev.map(item =>
       item.id === itemId ? { ...item, x, y } : item
@@ -205,7 +220,7 @@ export default function ProjectHubPage() {
     savePositionTimeoutRef.current = setTimeout(() => {
       saveItemPosition(itemId, x, y)
     }, 500)
-  }, [saveItemPosition])
+  }, [saveItemPosition, isReadOnly])
 
   // Handler pour double-click (ouvrir dossier ou fichier)
   const handleItemDoubleClick = useCallback((item: DesktopItem) => {
@@ -234,6 +249,12 @@ export default function ProjectHubPage() {
   
   // Handler pour renommage
   const handleRename = useCallback(async (itemId: string, newName: string) => {
+    // Désactiver si lecture seule
+    if (isReadOnly) {
+      toast.error('Vous ne pouvez pas modifier ce projet')
+      return
+    }
+    
     const item = desktopItems.find(i => i.id === itemId)
     if (!item) return
 
@@ -289,6 +310,12 @@ export default function ProjectHubPage() {
   }
 
   const handleNewFolder = async () => {
+    // Désactiver si lecture seule
+    if (isReadOnly) {
+      toast.error('Vous ne pouvez pas modifier ce projet')
+      return
+    }
+    
     try {
       // Créer immédiatement avec un nom par défaut
       const result = await createFolder({
@@ -374,7 +401,13 @@ export default function ProjectHubPage() {
       
       if (file.type !== 'file') {
         console.error('❌ Dragged item is not a file:', file.type)
-        toast.error('Seuls les fichiers peuvent être déplacés dans un dossier')
+        
+        // Message spécifique pour les call sheets - Afficher modal au centre
+        if (file.type === 'callsheet') {
+          setShowCallSheetFolderWarning(true)
+        } else {
+          toast.error('Seuls les fichiers peuvent être déplacés dans un dossier')
+        }
         return
       }
       
@@ -424,6 +457,12 @@ export default function ProjectHubPage() {
   }
 
   const handleDelete = async (item: DesktopItem) => {
+    // Désactiver si lecture seule
+    if (isReadOnly) {
+      toast.error('Vous ne pouvez pas modifier ce projet')
+      return
+    }
+    
     if (!confirm(`Supprimer "${item.name}" ?`)) return
 
     try {
@@ -464,6 +503,12 @@ export default function ProjectHubPage() {
 
   // Suppression multiple
   const handleDeleteMultiple = async () => {
+    // Désactiver si lecture seule
+    if (isReadOnly) {
+      toast.error('Vous ne pouvez pas modifier ce projet')
+      return
+    }
+    
     const itemsToDelete = Array.from(selectedItemIds).map(id => desktopItems.find(i => i.id === id)).filter(Boolean) as DesktopItem[]
     
     if (itemsToDelete.length === 0) return
@@ -553,13 +598,51 @@ export default function ProjectHubPage() {
     }
   }
 
-  const handleInviteMember = async (email: string) => {
+  const handleInviteMember = async (email: string, role: 'owner' | 'editor' | 'viewer') => {
     try {
-      const result = await inviteProjectMember(projectId, email, 'editor')
+      const result = await inviteProjectMember(projectId, email, role)
       if (result.success) {
         toast.success(`Invitation envoyée à ${email}`)
-        // Recharger les membres
-        const membersResult = await getProjectMembers(projectId)
+        // Recharger les invitations en attente
+        const invitationsResult = await getPendingInvitations(projectId)
+        setPendingInvitations(invitationsResult.success ? invitationsResult.data : [])
+      } else {
+        toast.error(result.error || 'Erreur lors de l\'invitation')
+      }
+    } catch (error) {
+      console.error('Error inviting member:', error)
+      toast.error('Erreur lors de l\'invitation')
+    }
+  }
+
+  const handleRevokeInvitation = async (invitationId: string) => {
+    try {
+      const result = await revokeInvitation(invitationId)
+      if (result.success) {
+        toast.success('Invitation révoquée')
+        // Recharger les invitations en attente
+        const invitationsResult = await getPendingInvitations(projectId)
+        setPendingInvitations(invitationsResult.success ? invitationsResult.data : [])
+      } else {
+        toast.error(result.error || 'Erreur lors de la révocation')
+      }
+    } catch (error) {
+      console.error('Error revoking invitation:', error)
+      toast.error('Erreur lors de la révocation')
+    }
+  }
+
+  const handleRemoveMember = async (memberId: string) => {
+    try {
+      const result = await removeProjectMember(memberId)
+      if (result.success) {
+        toast.success('Membre retiré du projet')
+        // Recharger les membres ET les invitations
+        const [membersResult, invitationsResult] = await Promise.all([
+          getProjectMembers(projectId),
+          getPendingInvitations(projectId)
+        ])
+        
         if (membersResult.success) {
           const mappedMembers: TeamMember[] = membersResult.data.map(m => ({
             id: m.id,
@@ -570,12 +653,14 @@ export default function ProjectHubPage() {
           }))
           setTeamMembers(mappedMembers)
         }
+        
+        setPendingInvitations(invitationsResult.success ? invitationsResult.data : [])
       } else {
-        toast.error(result.error || 'Erreur lors de l\'invitation')
+        toast.error(result.error || 'Erreur lors de la suppression')
       }
     } catch (error) {
-      console.error('Error inviting member:', error)
-      toast.error('Erreur lors de l\'invitation')
+      console.error('Error removing member:', error)
+      toast.error('Erreur lors de la suppression')
     }
   }
 
@@ -618,7 +703,21 @@ export default function ProjectHubPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header avec navigation */}
-      <Header user={mockUser} />
+      {/* Header conditionnel : simplifié pour les guests */}
+      {isGuestAccess ? (
+        <div className="bg-call-times-black border-b border-call-times-gray-light px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-xl font-bold text-white">{project?.name || 'Projet'}</h1>
+              <span className="px-3 py-1 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold rounded-full uppercase tracking-wider">
+                🔒 Accès Invité
+              </span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <Header user={mockUser} projectName={isReadOnly ? project?.name : undefined} />
+      )}
       
       {/* Breadcrumb / Project Header */}
       <div className="bg-[#0a0a0a] border-b border-gray-800 px-6 py-3">
@@ -634,6 +733,15 @@ export default function ProjectHubPage() {
           </button>
           <span className="text-gray-600">/</span>
           <span className="text-white font-semibold">{project.name}</span>
+          
+          {/* Badge Read-Only */}
+          {isReadOnly && (
+            <div className="flex items-center gap-2 ml-4">
+              <span className="px-3 py-1 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold rounded-full uppercase tracking-wider">
+                🔒 Read-Only Access
+              </span>
+            </div>
+          )}
         </div>
       </div>
       
@@ -650,6 +758,7 @@ export default function ProjectHubPage() {
           onSendEmail={handleSendEmail}
           onUploadFiles={handleUploadFiles}
           onNewFolder={handleNewFolder}
+          isReadOnly={isReadOnly}
         />
 
         {/* Zone centrale - Desktop Canvas */}
@@ -671,6 +780,7 @@ export default function ProjectHubPage() {
             onContextMenu={handleContextMenu}
             onArrange={handleArrangeItems}
             onDropOnFolder={handleDropOnFolder}
+            isReadOnly={isReadOnly}
           />
 
           {/* Fenêtre flottante du dossier ouvert */}
@@ -728,6 +838,7 @@ export default function ProjectHubPage() {
                 handleArrangeItems()
                 setContextMenu(null)
               } : undefined}
+              isReadOnly={isReadOnly}
             />
           )}
 
@@ -745,10 +856,14 @@ export default function ProjectHubPage() {
         <PreviewSidebar
           selectedItem={selectedItem}
           teamMembers={teamMembers}
+          pendingInvitations={pendingInvitations}
           onDownload={handleDownload}
           onDelete={handleDelete}
-          onInviteMember={handleInviteMember}
+          onOpenInviteModal={() => setShowInviteModal(true)}
+          onRevokeInvitation={handleRevokeInvitation}
+          onRemoveMember={handleRemoveMember}
           onOpenFullscreen={handleOpenFullscreen}
+          isReadOnly={isReadOnly}
         />
       </div>
 
@@ -760,6 +875,59 @@ export default function ProjectHubPage() {
           onClose={() => setFullscreenPreview(null)}
           onDownload={handleDownload}
           onNavigate={(item) => setFullscreenPreview(item)}
+        />
+      )}
+
+      {/* Modal Warning Call Sheet in Folder */}
+      {showCallSheetFolderWarning && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+          <div className="bg-[#111] border border-[#333] rounded-lg shadow-2xl max-w-md w-full p-8 text-center">
+            {/* Icon */}
+            <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg
+                className="w-8 h-8 text-blue-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+
+            {/* Title */}
+            <h3 className="text-white text-xl font-bold mb-3">
+              Les Call Sheets ne peuvent pas être déplacés
+            </h3>
+
+            {/* Description */}
+            <p className="text-[#a3a3a3] text-sm leading-relaxed mb-6">
+              Les Call Sheets sont des documents de travail qui restent à la racine du projet.
+              <br /><br />
+              Une fois finalisée, un <span className="text-white font-semibold">PDF sera généré automatiquement</span> que vous pourrez ranger dans n'importe quel dossier.
+            </p>
+
+            {/* Button */}
+            <button
+              onClick={() => setShowCallSheetFolderWarning(false)}
+              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-8 py-3 rounded-lg transition-all duration-200 w-full"
+            >
+              J'ai compris
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Invite Project Member */}
+      {showInviteModal && (
+        <InviteProjectMemberModal
+          projectName={project.name}
+          onClose={() => setShowInviteModal(false)}
+          onInvite={handleInviteMember}
         />
       )}
     </div>

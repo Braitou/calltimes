@@ -177,11 +177,11 @@ export default function ContactsPage() {
     <PageLayout user={mockUser} sidebar={sidebar}>
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-[2.5rem] font-black uppercase tracking-tight leading-none mb-2">
-          CONTACT DIRECTORY
+        <h1 className="page-title text-[3rem] mb-3">
+          Contact Directory
         </h1>
-        <p className="text-base text-[#a3a3a3]">
-          Your human arsenal to dominate all productions
+        <p className="section-header text-sm">
+          YOUR CREATIVE ARSENAL
         </p>
       </div>
 
@@ -481,8 +481,10 @@ export default function ContactsPage() {
           })}
 
           {filteredContacts.length === 0 && (
-            <div className="py-12 text-center text-[#a3a3a3]">
-              No contacts found
+            <div className="py-12 text-center">
+              <p className="card-subtitle text-lg text-[#666]">
+                No contacts found
+              </p>
             </div>
           )}
         </div>
@@ -569,8 +571,10 @@ export default function ContactsPage() {
           })}
 
           {filteredContacts.length === 0 && (
-            <div className="col-span-full py-12 text-center text-[#a3a3a3]">
-              No contacts found
+            <div className="col-span-full py-12 text-center">
+              <p className="card-subtitle text-lg text-[#666]">
+                No contacts found
+              </p>
             </div>
           )}
         </div>

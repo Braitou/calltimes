@@ -139,7 +139,7 @@ export function FileUploadModal({
       <div className="bg-[#111] border border-[#333] rounded-lg shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#222]">
-          <h2 className="text-xl font-bold">Upload de fichiers</h2>
+          <h2 className="card-title-custom text-xl">Upload de fichiers</h2>
           <Button
             variant="ghost"
             size="sm"

@@ -14,6 +14,7 @@ interface ContextMenuProps {
   onOpen?: () => void
   onDownload?: () => void
   onArrange?: () => void // Nouvelle action pour ranger
+  isReadOnly?: boolean
 }
 
 /**
@@ -27,7 +28,8 @@ export function ContextMenu({
   onDelete,
   onOpen,
   onDownload,
-  onArrange
+  onArrange,
+  isReadOnly = false
 }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -58,7 +60,7 @@ export function ContextMenu({
 
   // Si pas d'item = menu du canvas
   if (!item) {
-    if (onArrange) {
+    if (onArrange && !isReadOnly) {
       menuItems.push({
         icon: Grid3x3,
         label: 'Ranger les éléments',
@@ -76,8 +78,8 @@ export function ContextMenu({
       })
     }
 
-    // Renommer (tous les types)
-    if (onRename) {
+    // Renommer (tous les types) - Désactivé en lecture seule
+    if (onRename && !isReadOnly) {
       menuItems.push({
         icon: Edit2,
         label: 'Renommer',
@@ -94,12 +96,12 @@ export function ContextMenu({
       })
     }
 
-    // Séparateur + Supprimer
-    menuItems.push({
-      separator: true
-    })
+    // Séparateur + Supprimer - Désactivé en lecture seule
+    if (onDelete && !isReadOnly) {
+      menuItems.push({
+        separator: true
+      })
 
-    if (onDelete) {
       menuItems.push({
         icon: Trash2,
         label: 'Supprimer',

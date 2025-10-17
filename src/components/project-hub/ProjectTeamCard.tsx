@@ -186,7 +186,7 @@ export function ProjectTeamCard({
       <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Invite Team Member</DialogTitle>
+            <DialogTitle className="card-title-custom text-white text-xl">Invite Team Member</DialogTitle>
             <DialogDescription>
               Send an invitation to collaborate on this project
             </DialogDescription>

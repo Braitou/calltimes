@@ -5,24 +5,32 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase/client'
+import { Logo } from '@/components/Logo'
+import { useUserAccess } from '@/hooks/useUserAccess'
 
 interface HeaderProps {
   user?: {
     full_name?: string | null
     email: string
   }
+  projectName?: string // Pour les guests : nom du projet
 }
 
-export function Header({ user }: HeaderProps) {
+export function Header({ user, projectName }: HeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const { isOrgMember, isProjectGuest, isLoading } = useUserAccess()
   
-  const navigation = [
+  // Navigation complète pour membres org
+  const orgNavigation = [
     { name: 'Dashboard', href: '/dashboard' },
     { name: 'Projets', href: '/projects' },
     { name: 'Contacts', href: '/contacts' },
-    { name: 'Analytics', href: '/analytics' },
+    { name: 'Team', href: '/settings/team' },
   ]
+
+  // Pas de navigation pour les guests (seulement logo + user menu)
+  const navigation = isOrgMember ? orgNavigation : []
 
   const getInitials = (fullName?: string | null, email?: string) => {
     if (fullName) {
@@ -45,48 +53,65 @@ export function Header({ user }: HeaderProps) {
       <div className="w-full px-8 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/dashboard" className="text-white">
-            <div className="font-black text-2xl leading-[0.85] tracking-tight uppercase">
-              CALL<br />TIMES
-            </div>
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href={isOrgMember ? "/dashboard" : "#"} className="text-white">
+              <Logo size="small" />
+            </Link>
+            
+            {/* Guest Badge avec nom du projet */}
+            {isProjectGuest && projectName && (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-600">→</span>
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-3 py-1">
+                  <span className="text-blue-400 text-sm font-semibold">Guest Access:</span>
+                  <span className="text-white text-sm font-medium ml-2">{projectName}</span>
+                </div>
+              </div>
+            )}
+          </div>
 
-          {/* Navigation */}
-          <nav className="hidden md:block">
-            <ul className="flex gap-8 list-none">
-              {navigation.map((item) => (
-                <li key={item.name}>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "text-call-times-text-muted font-medium py-2 px-4 rounded-md transition-all duration-200",
-                      pathname === item.href
-                        ? "text-white bg-call-times-gray-light"
-                        : "hover:text-white hover:bg-call-times-gray-medium"
-                    )}
-                  >
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          {/* Navigation (uniquement pour membres org) */}
+          {isOrgMember && navigation.length > 0 && (
+            <nav className="hidden md:block">
+              <ul className="flex gap-8 list-none">
+                {navigation.map((item) => (
+                  <li key={item.name}>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "text-call-times-text-muted font-medium py-2 px-4 rounded-md transition-all duration-200",
+                        pathname === item.href
+                          ? "text-white bg-call-times-gray-light"
+                          : "hover:text-white hover:bg-call-times-gray-medium"
+                      )}
+                    >
+                      {item.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
 
           {/* Right section */}
           <div className="flex items-center gap-4">
-            {/* Search */}
-            <div className="hidden lg:block">
-              <Input
-                type="text"
-                placeholder="Rechercher projets, call sheets..."
-                className="w-80 bg-call-times-gray-dark border-call-times-gray-light text-white placeholder:text-call-times-text-disabled"
-              />
-            </div>
+            {/* Search (uniquement pour membres org) */}
+            {isOrgMember && (
+              <div className="hidden lg:block">
+                <Input
+                  type="text"
+                  placeholder="Rechercher projets, call sheets..."
+                  className="w-80 bg-call-times-gray-dark border-call-times-gray-light text-white placeholder:text-call-times-text-disabled"
+                />
+              </div>
+            )}
 
-            {/* CTA Button */}
-            <Button className="bg-white text-black hover:bg-gray-100 font-bold text-sm uppercase tracking-wider transform hover:-translate-y-0.5 transition-all">
-              Nouveau Projet
-            </Button>
+            {/* CTA Button (uniquement pour membres org) */}
+            {isOrgMember && (
+              <Button className="bg-white text-black hover:bg-gray-100 font-bold text-sm uppercase tracking-wider transform hover:-translate-y-0.5 transition-all">
+                Nouveau Projet
+              </Button>
+            )}
 
             {/* User Avatar */}
             {user && (

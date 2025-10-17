@@ -25,26 +25,38 @@ export interface CreateProjectInput {
  */
 export async function getProjects(): Promise<{ success: boolean; data: Project[]; error?: string }> {
   try {
+    console.log('🔍 [getProjects] Début de la requête')
     const supabase = createSupabaseClient()
 
     // Vérifier l'authentification
+    console.log('🔍 [getProjects] Récupération de l\'utilisateur...')
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
+      console.error('❌ [getProjects] Erreur auth:', authError)
       return { success: false, data: [], error: 'User not authenticated' }
     }
+    console.log('✅ [getProjects] User authentifié:', user.id, user.email)
 
     // Récupérer l'organization_id de l'utilisateur
-    const { data: membership } = await supabase
+    console.log('🔍 [getProjects] Récupération de l\'organisation...')
+    const { data: membership, error: membershipError } = await supabase
       .from('memberships')
       .select('organization_id')
       .eq('user_id', user.id)
       .single()
 
-    if (!membership) {
-      return { success: false, data: [], error: 'No organization found for user' }
+    if (membershipError) {
+      console.error('❌ [getProjects] Erreur membership:', membershipError)
     }
 
+    if (!membership) {
+      console.error('❌ [getProjects] Pas de membership trouvé')
+      return { success: false, data: [], error: 'No organization found for user' }
+    }
+    console.log('✅ [getProjects] Organization trouvée:', membership.organization_id)
+
     // Récupérer tous les projets de l'organisation
+    console.log('🔍 [getProjects] Récupération des projets pour org:', membership.organization_id)
     const { data, error } = await supabase
       .from('projects')
       .select('*')
@@ -52,13 +64,19 @@ export async function getProjects(): Promise<{ success: boolean; data: Project[]
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error fetching projects:', error)
+      console.error('❌ [getProjects] Erreur lors de la récupération des projets:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      })
       return { success: false, data: [], error: error.message }
     }
+    console.log('✅ [getProjects] Projets récupérés:', data?.length || 0)
 
     return { success: true, data: data || [] }
   } catch (error) {
-    console.error('Unexpected error:', error)
+    console.error('❌ [getProjects] Erreur inattendue:', error)
     return {
       success: false,
       data: [],

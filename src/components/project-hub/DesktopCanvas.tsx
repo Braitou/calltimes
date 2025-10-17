@@ -21,6 +21,7 @@ interface DesktopCanvasProps {
   onContextMenu: (e: React.MouseEvent, item?: DesktopItem) => void
   onArrange?: () => void
   onDropOnFolder?: (fileId: string, folderId: string) => void
+  isReadOnly?: boolean
 }
 
 /**
@@ -38,7 +39,8 @@ export function DesktopCanvas({
   onUpload,
   onContextMenu,
   onArrange,
-  onDropOnFolder
+  onDropOnFolder,
+  isReadOnly = false
 }: DesktopCanvasProps) {
   const desktopRef = useRef<HTMLDivElement>(null)
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null)
@@ -51,6 +53,12 @@ export function DesktopCanvas({
   const [hasMovedDuringSelection, setHasMovedDuringSelection] = useState(false)
 
   const handleDragStart = useCallback((e: React.DragEvent, itemId: string) => {
+    // Désactiver drag & drop en lecture seule
+    if (isReadOnly) {
+      e.preventDefault()
+      return
+    }
+    
     setDraggedItemId(itemId)
     
     // Calculer l'offset pour que l'icône suive le curseur correctement
@@ -82,7 +90,7 @@ export function DesktopCanvas({
       // Nettoyer après un court délai
       setTimeout(() => document.body.removeChild(clone), 0)
     }
-  }, [items])
+  }, [items, isReadOnly])
 
   const handleDragEnd = useCallback(() => {
     setDraggedItemId(null)
@@ -240,14 +248,16 @@ export function DesktopCanvas({
             <LayoutGrid className="w-4 h-4 mr-2" />
             Grid
           </Button>
-          <Button
-            size="sm"
-            onClick={onUpload}
-            className="bg-green-400 hover:bg-green-500 text-black font-bold"
-          >
-            <Upload className="w-4 h-4 mr-2" />
-            Upload
-          </Button>
+          {!isReadOnly && (
+            <Button
+              size="sm"
+              onClick={onUpload}
+              className="bg-green-400 hover:bg-green-500 text-black font-bold"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Upload
+            </Button>
+          )}
         </div>
       </div>
       

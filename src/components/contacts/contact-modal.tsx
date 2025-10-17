@@ -112,7 +112,7 @@ export function ContactModal({ open, onOpenChange, contact, onSave }: ContactMod
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md bg-call-times-gray-dark border-call-times-gray-light">
         <DialogHeader>
-          <DialogTitle className="text-white font-bold text-xl">
+          <DialogTitle className="card-title-custom text-white text-xl">
             {contact ? 'Modifier le contact' : 'Nouveau contact'}
           </DialogTitle>
           <DialogDescription className="text-call-times-text-secondary">

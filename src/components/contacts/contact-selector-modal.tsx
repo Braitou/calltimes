@@ -272,7 +272,7 @@ export function ContactSelectorModal({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-4xl max-h-[80vh] bg-call-times-gray-dark border-call-times-gray-light">
         <DialogHeader>
-          <DialogTitle className="text-white font-bold text-xl">
+          <DialogTitle className="card-title-custom text-white text-xl">
             {title}
           </DialogTitle>
           <DialogDescription className="text-call-times-text-secondary">

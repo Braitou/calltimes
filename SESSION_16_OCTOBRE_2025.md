@@ -330,3 +330,10 @@ npm install xlsx react-data-grid --legacy-peer-deps
 **Status** : ✅ Session Complétée avec Succès  
 **Satisfaction** : 🎉 Excellent !
 
+
+
+
+A faire demain : 
+- Enregistrement de la callsheet en pdf directement dans le projet
+- faire un tour dans les emails :
+- refonte fgraphique ? 

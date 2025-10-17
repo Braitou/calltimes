@@ -83,11 +83,11 @@ export function SectionHeader({ title, subtitle, action, className }: SectionHea
     <header className={cn("mb-12", className)}>
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-white font-black text-4xl mb-3 uppercase tracking-tight">
+          <h1 className="page-title text-4xl mb-3">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-call-times-text-secondary text-lg leading-relaxed">
+            <p className="text-call-times-text-secondary text-base leading-relaxed">
               {subtitle}
             </p>
           )}

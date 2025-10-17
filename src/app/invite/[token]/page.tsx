@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react'
-import { acceptInvitation } from '@/lib/services/invitations'
+import { validateGuestInvitation } from '@/lib/services/invitations'
 import Link from 'next/link'
 
 export default function AcceptInvitationPage() {
@@ -16,6 +16,7 @@ export default function AcceptInvitationPage() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [error, setError] = useState<string>('')
   const [projectId, setProjectId] = useState<string>('')
+  const [projectName, setProjectName] = useState<string>('')
 
   useEffect(() => {
     handleAcceptInvitation()
@@ -23,29 +24,34 @@ export default function AcceptInvitationPage() {
 
   const handleAcceptInvitation = async () => {
     try {
-      const result = await acceptInvitation(token)
+      // Valider le token et obtenir les infos du projet
+      const result = await validateGuestInvitation(token)
 
       if (!result.success) {
         setStatus('error')
-        setError(result.error || 'Failed to accept invitation')
+        setError(result.error || 'Invitation invalide ou expirée')
         return
       }
 
       setStatus('success')
       setProjectId(result.projectId || '')
+      setProjectName(result.projectName || '')
 
-      // Redirect after 2 seconds
+      // Stocker le token guest dans localStorage pour l'accès
+      if (result.projectId) {
+        localStorage.setItem(`guest_token_${result.projectId}`, token)
+      }
+
+      // Redirection immédiate vers le projet
       setTimeout(() => {
         if (result.projectId) {
           router.push(`/projects/${result.projectId}`)
-        } else {
-          router.push('/projects')
         }
-      }, 2000)
+      }, 1500)
     } catch (err) {
       console.error('Error accepting invitation:', err)
       setStatus('error')
-      setError('An unexpected error occurred')
+      setError('Une erreur inattendue est survenue')
     }
   }
 
@@ -66,14 +72,14 @@ export default function AcceptInvitationPage() {
           </div>
 
           <CardTitle className="text-2xl">
-            {status === 'loading' && 'Accepting Invitation...'}
-            {status === 'success' && 'Welcome Aboard!'}
-            {status === 'error' && 'Invitation Invalid'}
+            {status === 'loading' && 'Validation de l\'invitation...'}
+            {status === 'success' && 'Bienvenue ! 🎬'}
+            {status === 'error' && 'Invitation invalide'}
           </CardTitle>
 
           <CardDescription className="text-base">
-            {status === 'loading' && 'Please wait while we process your invitation'}
-            {status === 'success' && 'You have successfully joined the project. Redirecting...'}
+            {status === 'loading' && 'Veuillez patienter pendant la validation'}
+            {status === 'success' && projectName && `Vous accédez au projet "${projectName}". Redirection...`}
             {status === 'error' && error}
           </CardDescription>
         </CardHeader>
@@ -81,28 +87,16 @@ export default function AcceptInvitationPage() {
         {status === 'error' && (
           <CardContent className="space-y-3">
             <p className="text-sm text-[#a3a3a3] text-center">
-              This invitation may have expired or already been used.
+              Cette invitation a peut-être expiré ou a déjà été utilisée.
             </p>
-            <div className="flex gap-2">
-              <Link href="/projects" className="flex-1">
-                <Button variant="outline" className="w-full">
-                  Go to Projects
-                </Button>
-              </Link>
-              <Link href="/dashboard" className="flex-1">
-                <Button className="w-full bg-call-times-accent text-black hover:bg-call-times-accent-hover">
-                  Go to Dashboard
-                </Button>
-              </Link>
-            </div>
           </CardContent>
         )}
 
         {status === 'success' && projectId && (
           <CardContent>
             <Link href={`/projects/${projectId}`}>
-              <Button className="w-full bg-call-times-accent text-black hover:bg-call-times-accent-hover">
-                Go to Project Now
+              <Button className="w-full bg-green-400 hover:bg-green-500 text-black font-bold">
+                Accéder au projet maintenant
               </Button>
             </Link>
           </CardContent>

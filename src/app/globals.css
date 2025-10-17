@@ -276,3 +276,126 @@
     background: #444;
   }
 }
+
+/* Call Times Typography System */
+@layer components {
+  /* Logo Components */
+  .logo-call {
+    font-family: var(--font-inter);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    line-height: 0.85;
+  }
+  
+  .logo-times {
+    font-family: var(--font-baskerville);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+  
+  /* Hero Title - Elegant titles */
+  .hero-title {
+    font-family: var(--font-baskerville);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 4rem;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+  }
+  
+  /* Hero Subtitle - Modern punchy accents */
+  .hero-subtitle {
+    font-family: var(--font-inter);
+    font-weight: 700;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.3;
+  }
+  
+  /* Page Title - Elegant page headers */
+  .page-title {
+    font-family: var(--font-baskerville);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 2.5rem;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+  }
+  
+  /* Section Header - Modern section titles */
+  .section-header {
+    font-family: var(--font-inter);
+    font-weight: 700;
+    font-size: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.3;
+  }
+  
+  /* Subsection Title - Categories, groups */
+  .subsection-title {
+    font-family: var(--font-inter);
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  /* Card Title - Component headers */
+  .card-title-custom {
+    font-family: var(--font-inter);
+    font-weight: 700;
+    font-size: 1.125rem;
+  }
+  
+  /* Card Subtitle - Elegant descriptions */
+  .card-subtitle {
+    font-family: var(--font-baskerville);
+    font-style: italic;
+    font-size: 1rem;
+    color: #a3a3a3;
+  }
+  
+  /* Smooth font weight transitions */
+  .hover-weight {
+    transition: font-weight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Elegant fade-in for Baskerville elements */
+  .fade-in-elegant {
+    animation: fadeInElegant 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  @keyframes fadeInElegant {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Responsive typography adjustments */
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+      font-size: 0.875rem;
+    }
+    
+    .page-title {
+      font-size: 2rem;
+    }
+    
+    .section-header {
+      font-size: 0.75rem;
+    }
+  }
+}

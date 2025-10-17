@@ -353,11 +353,11 @@ export default function ProjectsPage() {
     <PageLayout user={mockUser} sidebar={sidebar}>
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-[2.5rem] font-black uppercase tracking-tight leading-none mb-2">
-          MISSION CONTROL
+        <h1 className="page-title text-[3rem] mb-3">
+          Mission Control
         </h1>
-        <p className="text-base text-[#a3a3a3]">
-          Coordinate your productions like an army general
+        <p className="section-header text-sm">
+          COORDINATE YOUR PRODUCTIONS WITH ELEGANCE
         </p>
       </div>
 
@@ -433,10 +433,13 @@ export default function ProjectsPage() {
         <section className="text-center py-20">
           <div className="max-w-2xl mx-auto">
             <div className="text-6xl mb-6">🚀</div>
-            <h2 className="text-white font-black text-3xl mb-6 uppercase tracking-tight">
+            <h2 className="page-title text-[2.5rem] mb-4">
               Launch Your First Project
             </h2>
-            <p className="text-[#a3a3a3] text-lg mb-8 leading-relaxed">
+            <p className="section-header text-sm mb-6">
+              START SOMETHING AMAZING
+            </p>
+            <p className="text-[#a3a3a3] text-base mb-8 leading-relaxed">
               Create your first project and start organizing your productions like a professional. 
               Call Times gives you total control over your workflow.
             </p>

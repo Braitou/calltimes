@@ -31,8 +31,8 @@ export default function LoginPage() {
         setMessage(`Erreur: ${error.message}`)
       } else if (data.user) {
         setMessage('SUCCESS: Connexion reussie ! Redirection...')
-        // Le middleware s'occupera de la redirection (onboarding ou dashboard)
-        router.push('/')
+        // Forcer un refresh complet pour que les cookies soient bien pris en compte
+        window.location.href = '/'
       }
     } catch (error) {
       setMessage(`Erreur: ${error}`)

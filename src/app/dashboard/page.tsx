@@ -3,6 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { PageLayout, SectionHeader, Sidebar } from '@/components/layout'
 import Link from 'next/link'
+import { FolderPlus, LayoutGrid, Users } from 'lucide-react'
 
 // Mock data for development
 const mockUser = {
@@ -24,13 +25,16 @@ const stats = [
 export default function DashboardPage() {
   return (
     <PageLayout user={mockUser} showSidebar={false}>
-      {/* Welcome Section - Optimized */}
+      {/* Welcome Section - New Typography */}
       <section className="mb-12">
-        <h1 className="text-[2.5rem] font-black leading-none mb-3 uppercase tracking-tight">
-          COMMAND CENTER
+        <h1 className="page-title text-[3rem] mb-4 fade-in-elegant">
+          Dashboard
         </h1>
-        <p className="text-base text-[#a3a3a3] font-normal">
-          Manage your productions like a pro
+        <p className="section-header text-base mb-2">
+          YOUR PRODUCTION COMMAND CENTER
+        </p>
+        <p className="text-base text-[#a3a3a3] font-normal mt-2">
+          Welcome back, {mockUser.full_name}
         </p>
       </section>
 
@@ -47,15 +51,18 @@ export default function DashboardPage() {
               animate-[fadeIn_0.4s_ease-out_0.1s_backwards]">
               <CardContent className="p-8">
                 <div className="flex items-center gap-5">
-                  <div className="w-14 h-14 bg-gradient-to-br from-call-times-accent to-[#22c55e] rounded-[10px] flex items-center justify-center text-[1.75rem] flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-[5deg]">
-                    📁
+                  <div className="flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110">
+                    <FolderPlus className="w-12 h-12 text-yellow-500" strokeWidth={1.5} />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-white font-bold text-[1.25rem] mb-2 leading-tight">
+                    <h3 className="card-subtitle text-white text-[1.4rem] mb-1 leading-tight">
                       New Project
                     </h3>
-                    <p className="text-[#a3a3a3] text-[0.9rem] leading-[1.5]">
-                      Create a new production project and start organizing your shoot
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[#4ade80] mb-2">
+                      START SOMETHING AMAZING
+                    </p>
+                    <p className="text-[#a3a3a3] text-[0.875rem] leading-[1.5]">
+                      Create a new production project and organize your shoot
                     </p>
                   </div>
                 </div>
@@ -73,15 +80,18 @@ export default function DashboardPage() {
               animate-[fadeIn_0.4s_ease-out_0.2s_backwards]">
               <CardContent className="p-8">
                 <div className="flex items-center gap-5">
-                  <div className="w-14 h-14 bg-gradient-to-br from-call-times-accent to-[#22c55e] rounded-[10px] flex items-center justify-center text-[1.75rem] flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-[5deg]">
-                    📂
+                  <div className="flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110">
+                    <LayoutGrid className="w-12 h-12 text-yellow-500" strokeWidth={1.5} />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-white font-bold text-[1.25rem] mb-2 leading-tight">
+                    <h3 className="card-subtitle text-white text-[1.4rem] mb-1 leading-tight">
                       Manage Projects
                     </h3>
-                    <p className="text-[#a3a3a3] text-[0.9rem] leading-[1.5]">
-                      View and manage all your existing production projects
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[#4ade80] mb-2">
+                      YOUR MISSION CONTROL
+                    </p>
+                    <p className="text-[#a3a3a3] text-[0.875rem] leading-[1.5]">
+                      View and manage all your existing productions
                     </p>
                   </div>
                 </div>
@@ -99,14 +109,17 @@ export default function DashboardPage() {
               animate-[fadeIn_0.4s_ease-out_0.3s_backwards]">
               <CardContent className="p-8">
                 <div className="flex items-center gap-5">
-                  <div className="w-14 h-14 bg-gradient-to-br from-call-times-accent to-[#22c55e] rounded-[10px] flex items-center justify-center text-[1.75rem] flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-[5deg]">
-                    👥
+                  <div className="flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110">
+                    <Users className="w-12 h-12 text-blue-500" strokeWidth={1.5} />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-white font-bold text-[1.25rem] mb-2 leading-tight">
+                    <h3 className="card-subtitle text-white text-[1.4rem] mb-1 leading-tight">
                       Contacts
                     </h3>
-                    <p className="text-[#a3a3a3] text-[0.9rem] leading-[1.5]">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[#4ade80] mb-2">
+                      YOUR CREATIVE ARSENAL
+                    </p>
+                    <p className="text-[#a3a3a3] text-[0.875rem] leading-[1.5]">
                       Access your professional directory and organize your crew
                     </p>
                   </div>

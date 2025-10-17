@@ -20,16 +20,39 @@ export async function inviteProjectMember(
       return { success: false, error: 'User not authenticated' }
     }
 
-    // Check if user is project owner/editor
-    const { data: membership } = await supabase
+    // Check if user is organization member (has permission to invite)
+    // Get project organization
+    const { data: project } = await supabase
+      .from('projects')
+      .select('organization_id')
+      .eq('id', projectId)
+      .single()
+    
+    if (!project) {
+      return { success: false, error: 'Project not found' }
+    }
+    
+    // Check if user is member of the project's organization
+    const { data: orgMembership } = await supabase
+      .from('memberships')
+      .select('id')
+      .eq('organization_id', project.organization_id)
+      .eq('user_id', user.id)
+      .single()
+    
+    // Alternatively, check if user is project owner
+    const { data: projectMembership } = await supabase
       .from('project_members')
       .select('role')
       .eq('project_id', projectId)
-      .eq('email', user.email)
+      .eq('user_id', user.id)
       .single()
-
-    if (!membership || !['owner', 'editor'].includes(membership.role)) {
-      return { success: false, error: 'Permission denied' }
+    
+    const isOrgMember = !!orgMembership
+    const isProjectOwner = projectMembership?.role === 'owner'
+    
+    if (!isOrgMember && !isProjectOwner) {
+      return { success: false, error: 'Permission denied - not an organization member or project owner' }
     }
 
     // Check if already invited
@@ -58,8 +81,9 @@ export async function inviteProjectMember(
         role,
         invitation_token: invitationToken,
         invitation_status: 'pending',
+        invited_by: user.id,
         invited_at: new Date().toISOString(),
-        invitation_expires_at: expiresAt.toISOString()
+        expires_at: expiresAt.toISOString()
       })
       .select()
       .single()
@@ -70,7 +94,7 @@ export async function inviteProjectMember(
     }
 
     // Get project details for email
-    const { data: project } = await supabase
+    const { data: projectDetails } = await supabase
       .from('projects')
       .select('name, description')
       .eq('id', projectId)
@@ -78,25 +102,160 @@ export async function inviteProjectMember(
 
     // Send invitation email via API route
     try {
-      await fetch('/api/invitations/send', {
+      const emailResponse = await fetch('/api/invitations/project', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: email,
           inviterName: user.user_metadata?.full_name || user.email,
-          projectName: project?.name || 'Untitled Project',
-          projectDescription: project?.description || '',
+          projectName: projectDetails?.name || 'Untitled Project',
+          projectDescription: projectDetails?.description || '',
           role,
           invitationToken,
           invitationUrl: `${window.location.origin}/invite/${invitationToken}`
         })
       })
+
+      if (!emailResponse.ok) {
+        const errorData = await emailResponse.json()
+        console.error('Error sending email:', errorData)
+      }
     } catch (emailError) {
       console.error('Error sending invitation email:', emailError)
       // Don't fail the invitation if email fails
     }
 
     return { success: true, invitationId: invitation.id }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
+
+/**
+ * Validate guest invitation token (without authentication)
+ * Used for anonymous guest access
+ */
+export async function validateGuestInvitation(token: string): Promise<{
+  success: boolean
+  projectId?: string
+  projectName?: string
+  error?: string
+}> {
+  try {
+    const supabase = createSupabaseClient()
+
+    console.log('🔍 Validating guest token:', token)
+
+    // Find invitation by token
+    const { data: invitation, error: fetchError } = await supabase
+      .from('project_members')
+      .select(`
+        id,
+        project_id,
+        email,
+        role,
+        invitation_status,
+        expires_at,
+        project:projects(id, name)
+      `)
+      .eq('invitation_token', token)
+      .eq('invitation_status', 'pending')
+      .single()
+
+    console.log('📧 Invitation result:', { invitation, error: fetchError })
+
+    if (fetchError || !invitation) {
+      console.error('❌ Invitation fetch error:', fetchError)
+      return { success: false, error: 'Invitation non trouvée ou expirée' }
+    }
+
+    // Check expiration
+    const expiresAt = new Date(invitation.expires_at)
+    if (expiresAt < new Date()) {
+      return { success: false, error: 'Cette invitation a expiré' }
+    }
+
+    // Return project info (no need to update status for guests)
+    return {
+      success: true,
+      projectId: invitation.project_id,
+      projectName: (invitation.project as any)?.name || 'Projet'
+    }
+  } catch (error) {
+    console.error('Error validating guest invitation:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Erreur de validation'
+    }
+  }
+}
+
+/**
+ * Get pending invitations for a project
+ */
+export async function getPendingInvitations(projectId: string): Promise<{
+  success: boolean
+  data: Array<{
+    id: string
+    email: string
+    role: 'owner' | 'editor' | 'viewer'
+    invited_at: string
+  }>
+  error?: string
+}> {
+  try {
+    const supabase = createSupabaseClient()
+
+    const { data, error } = await supabase
+      .from('project_members')
+      .select('id, email, role, invited_at')
+      .eq('project_id', projectId)
+      .eq('invitation_status', 'pending')
+      .order('invited_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching pending invitations:', error)
+      return { success: false, data: [], error: error.message }
+    }
+
+    return { success: true, data: data || [] }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return {
+      success: false,
+      data: [],
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
+
+/**
+ * Revoke a pending invitation
+ */
+export async function revokeInvitation(invitationId: string): Promise<{
+  success: boolean
+  error?: string
+}> {
+  try {
+    const supabase = createSupabaseClient()
+
+    // Delete the invitation
+    const { error } = await supabase
+      .from('project_members')
+      .delete()
+      .eq('id', invitationId)
+      .eq('invitation_status', 'pending') // Safety check
+
+    if (error) {
+      console.error('Error revoking invitation:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
     return {
@@ -221,16 +380,45 @@ export async function removeProjectMember(memberId: string): Promise<{
       return { success: false, error: 'Member not found' }
     }
 
-    // Check if current user is owner
-    const { data: currentMembership } = await supabase
-      .from('project_members')
-      .select('role')
-      .eq('project_id', member.project_id)
-      .eq('email', user.email)
+    // Check if current user has permission (org member OR project owner)
+    // 1. Check if user is org member
+    const { data: project } = await supabase
+      .from('projects')
+      .select('organization_id')
+      .eq('id', member.project_id)
       .single()
 
-    if (!currentMembership || currentMembership.role !== 'owner') {
-      return { success: false, error: 'Only owners can remove members' }
+    let hasPermission = false
+
+    if (project) {
+      const { data: orgMembership } = await supabase
+        .from('memberships')
+        .select('id')
+        .eq('organization_id', project.organization_id)
+        .eq('user_id', user.id)
+        .single()
+
+      if (orgMembership) {
+        hasPermission = true
+      }
+    }
+
+    // 2. If not org member, check if project owner
+    if (!hasPermission) {
+      const { data: projectMembership } = await supabase
+        .from('project_members')
+        .select('role')
+        .eq('project_id', member.project_id)
+        .eq('user_id', user.id)
+        .single()
+
+      if (projectMembership && projectMembership.role === 'owner') {
+        hasPermission = true
+      }
+    }
+
+    if (!hasPermission) {
+      return { success: false, error: 'Only organization members or project owners can remove members' }
     }
 
     // Cannot remove owner
