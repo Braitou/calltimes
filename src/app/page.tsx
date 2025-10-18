@@ -1,9 +1,12 @@
 import Link from 'next/link'
-import { ArrowRight, CheckCircle2, FolderOpen, Users, FileText, Zap, Shield, Globe } from 'lucide-react'
+import { ArrowRight, CheckCircle2, FolderOpen, Users, FileText, Zap, Shield, Globe, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/Logo'
 import { StructuredData } from '@/components/landing/StructuredData'
 import { ContactsDirectoryMockup, ProjectHubMockup, CallSheetEditorMockup } from '@/components/landing/Mockups'
+import { StickyHeader } from '@/components/landing/StickyHeader'
+import { ScrollAnimation } from '@/components/landing/ScrollAnimation'
+import { FAQItem } from '@/components/landing/FAQItem'
 
 export const metadata = {
   title: 'Call Times - Your New Best Friend as a Producer',
@@ -21,62 +24,72 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <StructuredData />
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Logo className="text-lg" />
-          
-          <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-sm text-gray-400 hover:text-white transition-colors">
-              Features
-            </a>
-            <a href="#pricing" className="text-sm text-gray-400 hover:text-white transition-colors">
-              Pricing
-            </a>
-            <a href="#faq" className="text-sm text-gray-400 hover:text-white transition-colors">
-              FAQ
-            </a>
-            <Link href="/auth/login" className="text-sm text-gray-400 hover:text-white transition-colors">
-              Sign In
-            </Link>
-            <Link href="/auth/signup">
-              <Button className="bg-green-500 hover:bg-green-600 text-black font-bold">
-                Get Started
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
+      
+      {/* Sticky Header */}
+      <StickyHeader />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-4xl mx-auto">
+      <section className="relative pt-32 pb-40 px-6 overflow-hidden">
+        {/* Animated gradient background */}
+        <div className="absolute inset-0 bg-gradient-radial from-green-500/10 via-transparent to-transparent animate-gradient opacity-50" />
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="text-center max-w-3xl mx-auto">
             {/* Logo */}
             <div className="mb-8 flex justify-center">
               <Logo className="text-7xl" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-serif italic mb-6 leading-tight">
+            
+            {/* Hero Title - Système typo Call Times */}
+            <h1 className="text-4xl md:text-5xl font-serif italic mb-4 leading-tight" style={{ lineHeight: 0.9 }}>
               Your new best friend as a producer
             </h1>
-            <p className="text-xl md:text-2xl text-gray-400 mb-12 font-sans">
+            
+            <p className="text-xl md:text-2xl text-gray-400 mb-12 font-sans max-w-2xl mx-auto" style={{ textWrap: 'balance' }}>
               Call Times is a global production assistant app that helps you manage your shooting faster and smoother.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Link href="/auth/signup">
-                <Button size="lg" className="bg-green-500 hover:bg-green-600 text-black font-bold text-lg px-8 py-6">
+                <Button 
+                  size="lg" 
+                  className="bg-green-500 hover:bg-green-600 text-black font-bold text-lg px-8 py-6 hover-scale shadow-lg hover:shadow-green-500/50 transition-all"
+                >
                   Start Free Trial
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
               <a href="#demo">
-                <Button size="lg" variant="outline" className="border-gray-700 hover:bg-gray-900 text-lg px-8 py-6">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-gray-700 hover:bg-gray-900 text-lg px-8 py-6 hover-scale transition-all"
+                >
                   Watch Demo
                 </Button>
               </a>
             </div>
+            
+            {/* Stats Bar */}
+            <div className="flex flex-wrap gap-8 justify-center text-sm text-gray-500">
+              <div>
+                <span className="font-bold text-green-500 text-xl">500+</span>
+                <span className="ml-2">call sheets created</span>
+              </div>
+              <div>
+                <span className="font-bold text-green-500 text-xl">50+</span>
+                <span className="ml-2">production teams</span>
+              </div>
+              <div>
+                <span className="font-bold text-green-500 text-xl">4.9/5</span>
+                <span className="ml-2">rating</span>
+              </div>
+            </div>
           </div>
         </div>
+        
+        {/* Glow effect at bottom */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-32 bg-green-500/10 blur-3xl animate-pulse-glow" />
       </section>
 
       {/* Social Proof */}
@@ -95,131 +108,175 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-32 px-6">
+      <section id="features" className="py-40 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20">
-            <h2 className="section-header mb-4">EVERYTHING YOU NEED</h2>
-            <p className="page-title">Powerful features for modern producers</p>
-          </div>
+          <ScrollAnimation>
+            <div className="text-center mb-20">
+              <h2 className="section-header mb-6 text-green-500 tracking-[0.2em]">EVERYTHING YOU NEED</h2>
+              <p className="text-4xl md:text-5xl font-serif italic" style={{ lineHeight: 0.9 }}>
+                Powerful features for modern producers
+              </p>
+            </div>
+          </ScrollAnimation>
 
           {/* Feature 1: Smart Directory */}
-          <div className="grid md:grid-cols-2 gap-16 items-center mb-32">
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <Users className="w-8 h-8 text-blue-500" />
-                <h3 className="text-3xl font-serif italic">Smart Contact Directory</h3>
+          <ScrollAnimation delay={100}>
+            <div className="grid md:grid-cols-2 gap-16 items-center mb-40">
+              <div>
+                <div className="flex items-center gap-4 mb-6">
+                  <Users className="w-10 h-10 text-blue-500" />
+                  <h3 className="text-4xl font-serif italic">Smart Contact Directory</h3>
+                </div>
+                <p className="text-xl text-gray-400 mb-8 leading-relaxed">
+                  Organize your entire crew in one intelligent directory. Sort by department, role, or project. 
+                  Import contacts from CSV/Excel in seconds.
+                </p>
+                <ul className="space-y-4">
+                  <ScrollAnimation delay={200}>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                      <span className="text-gray-300">Automatic categorization by department</span>
+                    </li>
+                  </ScrollAnimation>
+                  <ScrollAnimation delay={250}>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                      <span className="text-gray-300">Bulk import from CSV/Excel files</span>
+                    </li>
+                  </ScrollAnimation>
+                  <ScrollAnimation delay={300}>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                      <span className="text-gray-300">Quick search and filtering</span>
+                    </li>
+                  </ScrollAnimation>
+                  <ScrollAnimation delay={350}>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                      <span className="text-gray-300">Reusable across all your projects</span>
+                    </li>
+                  </ScrollAnimation>
+                </ul>
               </div>
-              <p className="text-xl text-gray-400 mb-6">
-                Organize your entire crew in one intelligent directory. Sort by department, role, or project. 
-                Import contacts from CSV/Excel in seconds.
-              </p>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Automatic categorization by department</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Bulk import from CSV/Excel files</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Quick search and filtering</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Reusable across all your projects</span>
-                </li>
-              </ul>
-            </div>
-            <div className="relative">
-              <div className="rounded-2xl overflow-hidden border border-gray-800 shadow-2xl" style={{ height: '700px' }}>
-                <ContactsDirectoryMockup />
+              <div className="relative">
+                <div className="rounded-2xl overflow-hidden border border-gray-800 shadow-2xl hover-lift-sm" style={{ height: '700px' }}>
+                  <ContactsDirectoryMockup />
+                </div>
+                {/* Subtle glow */}
+                <div className="absolute inset-0 bg-blue-500/5 blur-3xl -z-10" />
               </div>
             </div>
-          </div>
+          </ScrollAnimation>
 
           {/* Feature 2: Project Hub */}
-          <div className="grid md:grid-cols-[1.5fr_1fr] gap-12 items-center mb-32">
-            <div className="order-2 md:order-1 relative">
-              <div className="rounded-2xl overflow-hidden border border-gray-800 shadow-2xl" style={{ height: '700px' }}>
-                <ProjectHubMockup />
+          <ScrollAnimation delay={100}>
+            <div className="grid md:grid-cols-[1.5fr_1fr] gap-12 items-center mb-40">
+              <div className="order-2 md:order-1 relative">
+                <div className="rounded-2xl overflow-hidden border border-gray-800 shadow-2xl hover-lift-sm" style={{ height: '700px' }}>
+                  <ProjectHubMockup />
+                </div>
+                {/* Subtle glow */}
+                <div className="absolute inset-0 bg-green-500/5 blur-3xl -z-10" />
+              </div>
+              <div className="order-1 md:order-2">
+                <div className="flex items-center gap-4 mb-6">
+                  <FolderOpen className="w-10 h-10 text-green-500" />
+                  <h3 className="text-4xl font-serif italic">Collaborative Project Hub</h3>
+                </div>
+                <p className="text-xl text-gray-400 mb-8 leading-relaxed">
+                  Centralize all your production documents in one cloud-based hub. Share with your team and external collaborators 
+                  with granular permissions.
+                </p>
+                <ul className="space-y-4">
+                  <ScrollAnimation delay={200}>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                      <span className="text-gray-300">Desktop-like file management (drag & drop)</span>
+                    </li>
+                  </ScrollAnimation>
+                  <ScrollAnimation delay={250}>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                      <span className="text-gray-300">Preview PDFs, images, videos, Excel files</span>
+                    </li>
+                  </ScrollAnimation>
+                  <ScrollAnimation delay={300}>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                      <span className="text-gray-300">Invite team members and guests with custom roles</span>
+                    </li>
+                  </ScrollAnimation>
+                  <ScrollAnimation delay={350}>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                      <span className="text-gray-300">Private zone for sensitive documents</span>
+                    </li>
+                  </ScrollAnimation>
+                  <ScrollAnimation delay={400}>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                      <span className="text-gray-300">Real-time synchronization</span>
+                    </li>
+                  </ScrollAnimation>
+                </ul>
               </div>
             </div>
-            <div className="order-1 md:order-2">
-              <div className="flex items-center gap-3 mb-4">
-                <FolderOpen className="w-8 h-8 text-green-500" />
-                <h3 className="text-3xl font-serif italic">Collaborative Project Hub</h3>
-              </div>
-              <p className="text-xl text-gray-400 mb-6">
-                Centralize all your production documents in one cloud-based hub. Share with your team and external collaborators 
-                with granular permissions.
-              </p>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Desktop-like file management (drag & drop)</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Preview PDFs, images, videos, Excel files</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Invite team members and guests with custom roles</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Private zone for sensitive documents</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Real-time synchronization</span>
-                </li>
-              </ul>
-            </div>
-          </div>
+          </ScrollAnimation>
 
           {/* Feature 3: Call Sheet Editor */}
-          <div className="grid md:grid-cols-[1fr_1.5fr] gap-12 items-center">
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <FileText className="w-8 h-8 text-orange-500" />
-                <h3 className="text-3xl font-serif italic">Professional Call Sheet Editor</h3>
+          <ScrollAnimation delay={100}>
+            <div className="grid md:grid-cols-[1fr_1.5fr] gap-12 items-center">
+              <div>
+                <div className="flex items-center gap-4 mb-6">
+                  <FileText className="w-10 h-10 text-orange-500" />
+                  <h3 className="text-4xl font-serif italic">Professional Call Sheet Editor</h3>
+                </div>
+                <p className="text-xl text-gray-400 mb-8 leading-relaxed">
+                  Create beautiful, professional call sheets in minutes. Live preview, automatic formatting, 
+                  and one-click PDF generation.
+                </p>
+                <ul className="space-y-4">
+                  <ScrollAnimation delay={200}>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                      <span className="text-gray-300">Real-time A4 preview as you type</span>
+                    </li>
+                  </ScrollAnimation>
+                  <ScrollAnimation delay={250}>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                      <span className="text-gray-300">Auto-save every change</span>
+                    </li>
+                  </ScrollAnimation>
+                  <ScrollAnimation delay={300}>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                      <span className="text-gray-300">Import crew from your contact directory</span>
+                    </li>
+                  </ScrollAnimation>
+                  <ScrollAnimation delay={350}>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                      <span className="text-gray-300">Duplicate for multi-day shoots</span>
+                    </li>
+                  </ScrollAnimation>
+                  <ScrollAnimation delay={400}>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                      <span className="text-gray-300">Generate & email PDFs instantly</span>
+                    </li>
+                  </ScrollAnimation>
+                </ul>
               </div>
-              <p className="text-xl text-gray-400 mb-6">
-                Create beautiful, professional call sheets in minutes. Live preview, automatic formatting, 
-                and one-click PDF generation.
-              </p>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Real-time A4 preview as you type</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Auto-save every change</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Import crew from your contact directory</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Duplicate for multi-day shoots</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Generate & email PDFs instantly</span>
-                </li>
-              </ul>
-            </div>
-            <div className="relative">
-              <div className="rounded-2xl overflow-hidden border border-gray-800 shadow-2xl" style={{ height: '700px' }}>
-                <CallSheetEditorMockup />
+              <div className="relative">
+                <div className="rounded-2xl overflow-hidden border border-gray-800 shadow-2xl hover-lift-sm" style={{ height: '700px' }}>
+                  <CallSheetEditorMockup />
+                </div>
+                {/* Subtle glow */}
+                <div className="absolute inset-0 bg-orange-500/5 blur-3xl -z-10" />
               </div>
             </div>
-          </div>
+          </ScrollAnimation>
         </div>
       </section>
 
@@ -266,135 +323,145 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-32 px-6">
+      <section id="pricing" className="py-40 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20">
-            <h2 className="section-header mb-4">PRICING</h2>
-            <p className="page-title">Choose the plan that fits your needs</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Free Plan */}
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 hover:border-gray-700 transition-colors">
-              <h3 className="text-2xl font-bold mb-2">Free</h3>
-              <p className="text-gray-400 mb-6">Perfect for trying out Call Times</p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold">$0</span>
-                <span className="text-gray-400">/month</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">1 project</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">50 MB storage</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">1 organization member</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Unlimited contacts</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Basic call sheets</span>
-                </li>
-              </ul>
-              <Link href="/auth/signup">
-                <Button variant="outline" className="w-full border-gray-700 hover:bg-gray-800">
-                  Get Started
-                </Button>
-              </Link>
+          <ScrollAnimation>
+            <div className="text-center mb-20">
+              <h2 className="section-header mb-6 text-green-500 tracking-[0.2em]">PRICING</h2>
+              <p className="text-4xl md:text-5xl font-serif italic" style={{ lineHeight: 0.9 }}>
+                Choose the plan that fits your needs
+              </p>
             </div>
+          </ScrollAnimation>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {/* Free Plan */}
+            <ScrollAnimation delay={0}>
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 hover-lift hover:border-gray-700 transition-all hover:shadow-2xl">
+                <h3 className="text-2xl font-bold mb-2">Free</h3>
+                <p className="text-gray-400 mb-6">Perfect for trying out Call Times</p>
+                <div className="mb-6">
+                  <span className="text-4xl font-bold">$0</span>
+                  <span className="text-gray-400">/month</span>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">1 project</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">50 MB storage</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">1 organization member</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">Unlimited contacts</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">Basic call sheets</span>
+                  </li>
+                </ul>
+                <Link href="/auth/signup">
+                  <Button variant="outline" className="w-full border-gray-700 hover:bg-gray-800 hover-scale">
+                    Get Started
+                  </Button>
+                </Link>
+              </div>
+            </ScrollAnimation>
 
             {/* Pro Plan */}
-            <div className="bg-gradient-to-br from-green-900/20 to-gray-900 border-2 border-green-500 rounded-2xl p-8 relative">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-green-500 text-black px-4 py-1 rounded-full text-sm font-bold">
-                POPULAR
+            <ScrollAnimation delay={100}>
+              <div className="bg-gradient-to-br from-green-900/20 to-gray-900 border-2 border-green-500 rounded-2xl p-8 relative hover-lift shadow-lg shadow-green-500/20 hover:shadow-green-500/40 transition-all">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-green-500 text-black px-4 py-1 rounded-full text-sm font-bold animate-pulse-glow">
+                  POPULAR
+                </div>
+                <h3 className="text-2xl font-bold mb-2">Pro</h3>
+                <p className="text-gray-400 mb-6">For professional producers</p>
+                <div className="mb-6">
+                  <span className="text-4xl font-bold">€29</span>
+                  <span className="text-gray-400">/month</span>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">Unlimited projects</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">20 GB storage</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">3 organization members</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">Unlimited guest invites</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">Advanced call sheets</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">Priority support</span>
+                  </li>
+                </ul>
+                <Link href="/auth/signup">
+                  <Button className="w-full bg-green-500 hover:bg-green-600 text-black font-bold hover-scale shadow-lg hover:shadow-green-500/50 transition-all">
+                    Start Free Trial
+                  </Button>
+                </Link>
               </div>
-              <h3 className="text-2xl font-bold mb-2">Pro</h3>
-              <p className="text-gray-400 mb-6">For professional producers</p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold">€29</span>
-                <span className="text-gray-400">/month</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Unlimited projects</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">20 GB storage</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">3 organization members</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Unlimited guest invites</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Advanced call sheets</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Priority support</span>
-                </li>
-              </ul>
-              <Link href="/auth/signup">
-                <Button className="w-full bg-green-500 hover:bg-green-600 text-black font-bold">
-                  Start Free Trial
-                </Button>
-              </Link>
-            </div>
+            </ScrollAnimation>
 
             {/* Organization Plan */}
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 hover:border-gray-700 transition-colors">
-              <h3 className="text-2xl font-bold mb-2">Organization</h3>
-              <p className="text-gray-400 mb-6">For production companies</p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold">€119</span>
-                <span className="text-gray-400">/month</span>
+            <ScrollAnimation delay={200}>
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 hover-lift hover:border-gray-700 transition-all hover:shadow-2xl">
+                <h3 className="text-2xl font-bold mb-2">Organization</h3>
+                <p className="text-gray-400 mb-6">For production companies</p>
+                <div className="mb-6">
+                  <span className="text-4xl font-bold">€119</span>
+                  <span className="text-gray-400">/month</span>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">Unlimited projects</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">1 TB storage</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">Unlimited organization members</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">Advanced permissions</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">Custom branding</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-300">Dedicated support</span>
+                  </li>
+                </ul>
+                <Link href="/auth/signup">
+                  <Button variant="outline" className="w-full border-gray-700 hover:bg-gray-800 hover-scale">
+                    Contact Sales
+                  </Button>
+                </Link>
               </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Unlimited projects</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">1 TB storage</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Unlimited organization members</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Advanced permissions</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Custom branding</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-300">Dedicated support</span>
-                </li>
-              </ul>
-              <Link href="/auth/signup">
-                <Button variant="outline" className="w-full border-gray-700 hover:bg-gray-800">
-                  Contact Sales
-                </Button>
-              </Link>
-            </div>
+            </ScrollAnimation>
           </div>
         </div>
       </section>
