@@ -391,17 +391,44 @@ export async function revokeOrganizationInvitation(invitationId: string) {
 
 /**
  * Lister les membres d'une organisation (avec invitations pending)
+ * Si organizationId n'est pas fourni, récupère l'organisation de l'utilisateur connecté
  */
-export async function listOrganizationMembers(organizationId: string) {
+export async function listOrganizationMembers(organizationId?: string) {
   try {
+    let orgId = organizationId
+
+    // Si pas d'organizationId fourni, récupérer celui de l'utilisateur
+    if (!orgId) {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) {
+        return { success: false, error: 'User not authenticated' }
+      }
+
+      const { data: membership, error: membershipError } = await supabase
+        .from('memberships')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .single()
+
+      if (membershipError || !membership) {
+        console.error('Error getting user organization:', membershipError)
+        return { success: false, error: 'No organization found for user' }
+      }
+
+      orgId = membership.organization_id
+    }
+
     // Membres existants
-    const { data: members, error: membersError } = await supabase
+    const { data: memberships, error: membersError } = await supabase
       .from('memberships')
       .select(`
-        *,
-        user:users(id, full_name, email)
+        id,
+        role,
+        created_at,
+        user_id,
+        users!inner(id, full_name, email)
       `)
-      .eq('organization_id', organizationId)
+      .eq('organization_id', orgId)
       .order('created_at', { ascending: true })
 
     if (membersError) {
@@ -409,14 +436,19 @@ export async function listOrganizationMembers(organizationId: string) {
       return { success: false, error: membersError.message }
     }
 
+    // Transformer les données pour avoir un format simple
+    const members = memberships?.map(m => ({
+      id: m.user_id,
+      full_name: (m.users as any)?.full_name || null,
+      email: (m.users as any)?.email || '',
+      role: m.role
+    })) || []
+
     // Invitations pending
     const { data: invitations, error: invitationsError } = await supabase
       .from('organization_invitations')
-      .select(`
-        *,
-        inviter:users!organization_invitations_invited_by_fkey(id, full_name, email)
-      `)
-      .eq('organization_id', organizationId)
+      .select('*')
+      .eq('organization_id', orgId)
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
 

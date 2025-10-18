@@ -139,16 +139,29 @@ export async function inviteProjectMember(
  * Validate guest invitation token (without authentication)
  * Used for anonymous guest access
  */
-export async function validateGuestInvitation(token: string): Promise<{
+/**
+ * Accept project invitation for authenticated users
+ * Updates user_id and changes status to 'accepted'
+ */
+export async function acceptProjectInvitation(token: string): Promise<{
   success: boolean
   projectId?: string
   projectName?: string
+  role?: MemberRole
   error?: string
 }> {
   try {
     const supabase = createSupabaseClient()
 
-    console.log('🔍 Validating guest token:', token)
+    console.log('🔍 Accepting invitation with token:', token)
+
+    // Get current user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return { success: false, error: 'User not authenticated' }
+    }
+
+    console.log('👤 User authenticated:', user.email)
 
     // Find invitation by token
     const { data: invitation, error: fetchError } = await supabase
@@ -166,6 +179,94 @@ export async function validateGuestInvitation(token: string): Promise<{
       .eq('invitation_status', 'pending')
       .single()
 
+    console.log('📧 Invitation found:', { invitation, error: fetchError })
+
+    if (fetchError || !invitation) {
+      console.error('❌ Invitation fetch error:', fetchError)
+      return { success: false, error: 'Invitation non trouvée ou expirée' }
+    }
+
+    // Check expiration
+    const expiresAt = new Date(invitation.expires_at)
+    if (expiresAt < new Date()) {
+      return { success: false, error: 'Cette invitation a expiré' }
+    }
+
+    // Verify email matches (optional, but recommended)
+    if (invitation.email.toLowerCase() !== user.email?.toLowerCase()) {
+      console.warn('⚠️ Email mismatch:', { invitationEmail: invitation.email, userEmail: user.email })
+      // Continue anyway - allow user to accept invitation even if email doesn't match
+    }
+
+    // Update invitation: add user_id and change status to 'accepted'
+    const { error: updateError } = await supabase
+      .from('project_members')
+      .update({
+        user_id: user.id,
+        invitation_status: 'accepted',
+        invitation_token: null // Clear token after acceptance
+      })
+      .eq('id', invitation.id)
+
+    if (updateError) {
+      console.error('❌ Error updating invitation:', updateError)
+      return { success: false, error: 'Erreur lors de l\'acceptation de l\'invitation' }
+    }
+
+    console.log('✅ Invitation accepted successfully')
+
+    return {
+      success: true,
+      projectId: invitation.project_id,
+      projectName: (invitation.project as any)?.name || 'Projet',
+      role: invitation.role as MemberRole
+    }
+  } catch (error) {
+    console.error('Error accepting invitation:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Erreur d\'acceptation'
+    }
+  }
+}
+
+/**
+ * Validate guest invitation (for anonymous access)
+ * Does NOT update user_id - just validates token for localStorage storage
+ * Returns role for permission management
+ */
+export async function validateGuestInvitation(token: string): Promise<{
+  success: boolean
+  projectId?: string
+  projectName?: string
+  role?: string
+  email?: string
+  invitationId?: string
+  invitationStatus?: string
+  error?: string
+}> {
+  try {
+    const supabase = createSupabaseClient()
+
+    console.log('🔍 Validating guest token:', token)
+
+    // Find invitation by token
+    // Accept both 'pending' and 'accepted' status (for returning guests)
+    const { data: invitation, error: fetchError } = await supabase
+      .from('project_members')
+      .select(`
+        id,
+        project_id,
+        email,
+        role,
+        invitation_status,
+        expires_at,
+        project:projects(id, name)
+      `)
+      .eq('invitation_token', token)
+      .in('invitation_status', ['pending', 'accepted'])
+      .single()
+
     console.log('📧 Invitation result:', { invitation, error: fetchError })
 
     if (fetchError || !invitation) {
@@ -179,17 +280,139 @@ export async function validateGuestInvitation(token: string): Promise<{
       return { success: false, error: 'Cette invitation a expiré' }
     }
 
-    // Return project info (no need to update status for guests)
+    // Return project info + role (no need to update status for guests)
     return {
       success: true,
       projectId: invitation.project_id,
-      projectName: (invitation.project as any)?.name || 'Projet'
+      projectName: (invitation.project as any)?.name || 'Projet',
+      role: invitation.role, // NEW: Return role for anonymous access
+      email: invitation.email,
+      invitationId: invitation.id,
+      invitationStatus: invitation.invitation_status // NEW: Return status to check if already accepted
     }
   } catch (error) {
     console.error('Error validating guest invitation:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Erreur de validation'
+    }
+  }
+}
+
+/**
+ * Create or login to a temporary service account for guest editors
+ * This allows guests to upload files and have proper auth.uid() for RLS
+ * Also creates a membership entry to link the service account to the organization
+ */
+export async function createGuestServiceAccount(
+  token: string, 
+  email: string, 
+  projectId: string,
+  invitationId: string,
+  guestName?: string
+): Promise<{
+  success: boolean
+  userId?: string
+  error?: string
+}> {
+  try {
+    const supabase = createSupabaseClient()
+
+    // Generate a deterministic password from the token (secure enough for temp accounts)
+    // Use only the token so it's the same every time
+    const password = `guest-service-${token}`
+    const guestEmail = `guest-${token}@call-times.internal`
+
+    console.log('🔐 Creating/logging in guest service account for:', email, 'with name:', guestName)
+
+    let userId: string | undefined
+
+    // Try to sign up (will fail if account already exists)
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email: guestEmail,
+      password,
+      options: {
+        data: {
+          full_name: guestName || `Guest (${email})`,
+          is_guest: true,
+          guest_email: email,
+          guest_display_name: guestName
+        }
+      }
+    })
+
+    if (signUpError && !signUpError.message.includes('already registered')) {
+      console.error('❌ Error creating guest account:', signUpError)
+      return { success: false, error: signUpError.message }
+    }
+
+    // If signup succeeded, we're logged in
+    if (signUpData.user) {
+      console.log('✅ Guest service account created and logged in:', signUpData.user.id)
+      userId = signUpData.user.id
+    } else {
+      // If account already exists, try to sign in
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: guestEmail,
+        password
+      })
+
+      if (signInError) {
+        console.error('❌ Error signing in guest account:', signInError)
+        return { success: false, error: signInError.message }
+      }
+
+      console.log('✅ Guest service account logged in:', signInData.user?.id)
+      userId = signInData.user?.id
+    }
+
+    if (!userId) {
+      return { success: false, error: 'Failed to get user ID' }
+    }
+
+    // 🔑 IMPORTANT: Get the project's organization_id
+    const { data: project } = await supabase
+      .from('projects')
+      .select('organization_id')
+      .eq('id', projectId)
+      .single()
+
+    if (!project) {
+      console.error('❌ Project not found:', projectId)
+      return { success: false, error: 'Project not found' }
+    }
+
+    console.log('📋 Project organization:', project.organization_id)
+
+    // 🔑 IMPORTANT: Do NOT add guest service accounts to memberships table
+    // Guest editors/viewers should ONLY be in project_members, not in memberships
+    // This ensures they are treated as external guests with limited permissions
+    console.log('✅ Guest service account will remain external (not in memberships)')
+
+    // Update the invitation with user_id and change status to 'accepted'
+    // Keep the token for future validations (when guest returns to the project)
+    const { error: updateError } = await supabase
+      .from('project_members')
+      .update({
+        user_id: userId,
+        invitation_status: 'accepted'
+        // DON'T clear invitation_token - we need it for future validations
+      })
+      .eq('id', invitationId)
+
+    if (updateError) {
+      console.error('❌ Error updating invitation:', updateError)
+      // Continue anyway
+    } else {
+      console.log('✅ Invitation marked as accepted')
+    }
+
+    return { success: true, userId }
+  } catch (error) {
+    console.error('Error with guest service account:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Erreur de création de compte'
     }
   }
 }

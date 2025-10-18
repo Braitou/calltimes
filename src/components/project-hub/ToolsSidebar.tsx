@@ -19,6 +19,7 @@ interface ToolsSidebarProps {
   onUploadFiles: () => void
   onNewFolder: () => void
   isReadOnly?: boolean
+  role?: 'owner' | 'editor' | 'viewer' | null
 }
 
 const colorClasses: Record<ToolColor, string> = {
@@ -43,8 +44,15 @@ export function ToolsSidebar({
   onSendEmail,
   onUploadFiles,
   onNewFolder,
-  isReadOnly = false
+  isReadOnly = false,
+  role = null
 }: ToolsSidebarProps) {
+  
+  // Permissions par rôle
+  const canManageCallSheets = role === 'owner' // Seulement owners
+  const canUpload = role === 'owner' || role === 'editor' // Owners et editors
+  const canCreateFolder = role === 'owner' || role === 'editor' // Owners et editors
+  const canManageTeam = role === 'owner' // Seulement owners
   
   // Filtrer les outils selon les permissions
   const allTools: ToolItem[] = [
@@ -54,7 +62,7 @@ export function ToolsSidebar({
       description: 'Create new sheet',
       color: 'green',
       onClick: onNewCallSheet,
-      disabled: isReadOnly
+      disabled: !canManageCallSheets
     },
     {
       icon: Users,
@@ -62,7 +70,7 @@ export function ToolsSidebar({
       description: 'Manage team',
       color: 'blue',
       onClick: onManageTeam,
-      disabled: isReadOnly
+      disabled: !canManageTeam
     },
     {
       icon: UserPlus,
@@ -70,7 +78,7 @@ export function ToolsSidebar({
       description: 'Import people',
       color: 'purple',
       onClick: onAddContacts,
-      disabled: isReadOnly
+      disabled: !canManageTeam
     },
     {
       icon: Mail,
@@ -78,7 +86,7 @@ export function ToolsSidebar({
       description: 'Notify team',
       color: 'red',
       onClick: onSendEmail,
-      disabled: isReadOnly
+      disabled: !canManageTeam
     },
     {
       icon: Upload,
@@ -86,7 +94,7 @@ export function ToolsSidebar({
       description: 'Upload files',
       color: 'orange',
       onClick: onUploadFiles,
-      disabled: isReadOnly
+      disabled: !canUpload
     },
     {
       icon: FolderPlus,
@@ -94,7 +102,7 @@ export function ToolsSidebar({
       description: 'Organize files',
       color: 'yellow',
       onClick: onNewFolder,
-      disabled: isReadOnly
+      disabled: !canCreateFolder
     },
   ]
   

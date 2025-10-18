@@ -172,12 +172,12 @@ export function DesktopIcon({
         
         {/* Icon ou Thumbnail */}
         {item.type === 'folder' ? (
-          // Dossier - TOUJOURS JAUNE
+          // Dossier - JAUNE
           <div className="relative">
-            <Folder className="w-10 h-10 text-yellow-500 drop-shadow-lg fill-yellow-500/20" />
+            <Folder className="w-10 h-10 drop-shadow-lg text-yellow-500 fill-yellow-500/20" />
             {/* Nombre de fichiers dans le dossier */}
             {'files_count' in item.data && item.data.files_count !== undefined && (
-              <div className="absolute -bottom-1 -right-1 bg-black/80 text-yellow-500 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+              <div className="absolute -bottom-1 -right-1 bg-black/80 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-yellow-500">
                 {item.data.files_count}
               </div>
             )}

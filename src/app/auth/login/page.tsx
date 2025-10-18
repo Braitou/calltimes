@@ -1,11 +1,12 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { acceptProjectInvitation } from '@/lib/services/invitations'
 import Link from 'next/link'
 
 export default function LoginPage() {
@@ -15,6 +16,14 @@ export default function LoginPage() {
   const [message, setMessage] = useState('')
   const [usePassword, setUsePassword] = useState(true) // Par defaut, utiliser mot de passe
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isInvitation = searchParams.get('invitation') === 'true'
+
+  useEffect(() => {
+    if (isInvitation) {
+      setMessage('Connectez-vous pour accepter l\'invitation au projet')
+    }
+  }, [isInvitation])
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,8 +40,31 @@ export default function LoginPage() {
         setMessage(`Erreur: ${error.message}`)
       } else if (data.user) {
         setMessage('SUCCESS: Connexion reussie ! Redirection...')
-        // Forcer un refresh complet pour que les cookies soient bien pris en compte
-        window.location.href = '/'
+        
+        // Vérifier s'il y a une invitation en attente
+        const pendingToken = sessionStorage.getItem('pending_invitation_token')
+        
+        if (pendingToken) {
+          console.log('🎫 Pending invitation found, accepting...')
+          setMessage('Acceptation de l\'invitation...')
+          
+          // Accepter l'invitation
+          const result = await acceptProjectInvitation(pendingToken)
+          
+          // Nettoyer le sessionStorage
+          sessionStorage.removeItem('pending_invitation_token')
+          
+          if (result.success && result.projectId) {
+            console.log('✅ Invitation accepted, redirecting to project:', result.projectId)
+            window.location.href = `/projects/${result.projectId}`
+          } else {
+            console.error('❌ Failed to accept invitation:', result.error)
+            window.location.href = '/'
+          }
+        } else {
+          // Pas d'invitation, redirection normale
+          window.location.href = '/'
+        }
       }
     } catch (error) {
       setMessage(`Erreur: ${error}`)
@@ -179,10 +211,10 @@ export default function LoginPage() {
                   Nouveau dans le Command Center ?
                 </p>
                 <Link
-                  href="/auth/signup"
+                  href={isInvitation ? "/auth/signup?invitation=true" : "/auth/signup"}
                   className="text-call-times-accent hover:text-call-times-accent-hover font-bold text-sm uppercase tracking-wider"
                 >
-                  Creer un Compte â†’
+                  Creer un Compte â†'
                 </Link>
               </div>
             </div>

@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { PageLayout, Sidebar } from '@/components/layout'
+import { PageLayout } from '@/components/layout'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
@@ -22,17 +22,12 @@ const mockUser = {
   email: 'simon@call-times.app'
 }
 
-const quickActions = [
-  { icon: '🚀', label: 'New Project', href: '/projects/new' },
-  { icon: '📊', label: 'Analytics', href: '/analytics' },
-  { icon: '👥', label: 'Team', href: '/contacts' },
-]
-
-const stats = [
-  { label: 'Active Projects', value: '12' },
-  { label: 'Call Sheets', value: '34' },
-  { label: 'Total Team', value: '247' },
-]
+// Fonction helper pour calculer l'espace total utilisé
+function calculateTotalSize(projects: Project[]): string {
+  // Pour l'instant on retourne un mock, mais on pourrait calculer la vraie taille
+  // en additionnant les tailles de tous les fichiers des projets
+  return '0 MB' // TODO: Implémenter le calcul réel depuis Supabase Storage
+}
 
 // Mock projects data - simplified
 type ProjectStatus = 'active' | 'draft' | 'archived'
@@ -205,18 +200,12 @@ function ProjectCard({
         </div>
 
         {/* Actions (appear on hover) */}
-        <div className="mt-3 pt-3 border-t border-[#222] flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <Link href={`/projects/${project.id}`} className="flex-1">
+        <div className="mt-3 pt-3 border-t border-[#222] opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <Link href={`/projects/${project.id}`} className="block">
             <Button className="w-full bg-call-times-accent text-black hover:bg-[#22c55e] font-semibold text-sm border-call-times-accent transition-all duration-200 h-9">
               Open
             </Button>
           </Link>
-          <Button 
-            variant="outline" 
-            className="flex-1 bg-[#222] border-[#333] text-[#a3a3a3] hover:bg-[#333] hover:text-white font-semibold text-sm transition-all duration-200 h-9"
-          >
-            Options
-          </Button>
         </div>
       </CardContent>
 
@@ -341,24 +330,36 @@ export default function ProjectsPage() {
     }
   }
 
-  const sidebar = (
-    <Sidebar 
-      title="Mission Control"
-      quickActions={quickActions}
-      stats={stats}
-    />
-  )
+  // Calculer les stats réelles
+  const totalSize = calculateTotalSize(projects)
+  const projectCount = projects.length
 
   return (
-    <PageLayout user={mockUser} sidebar={sidebar}>
-      {/* Page Header */}
+    <PageLayout user={mockUser}>
+      {/* Page Header avec stats inline */}
       <div className="mb-8">
-        <h1 className="page-title text-[3rem] mb-3">
-          Mission Control
-        </h1>
-        <p className="section-header text-sm">
-          COORDINATE YOUR PRODUCTIONS WITH ELEGANCE
-        </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="page-title text-[3rem] mb-3">
+              Mission Control
+            </h1>
+            <p className="section-header text-sm">
+              COORDINATE YOUR PRODUCTIONS WITH ELEGANCE
+            </p>
+          </div>
+          {/* Stats en vert alignées à droite */}
+          <div className="flex items-center gap-8 text-call-times-accent ml-auto">
+            <div className="text-right">
+              <div className="text-3xl font-bold">{projectCount}</div>
+              <div className="text-xs uppercase tracking-wider text-gray-500 mt-1">Projets</div>
+            </div>
+            <div className="w-px h-12 bg-gray-800"></div>
+            <div className="text-right">
+              <div className="text-3xl font-bold">{totalSize}</div>
+              <div className="text-xs uppercase tracking-wider text-gray-500 mt-1">Espace</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Toolbar */}

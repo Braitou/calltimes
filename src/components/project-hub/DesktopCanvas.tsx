@@ -7,6 +7,7 @@ import { DesktopIcon } from './DesktopIcon'
 import { DesktopItem } from '@/types/project-hub'
 import { cn } from '@/lib/utils'
 import { getSelectionRect, getItemsInSelectionRect } from '@/lib/utils/desktop-helpers'
+import { PRIVATE_ZONE_THRESHOLD, adjustPositionAwayFromSeparator } from '@/lib/constants/canvas'
 
 interface DesktopCanvasProps {
   items: DesktopItem[]
@@ -22,6 +23,9 @@ interface DesktopCanvasProps {
   onArrange?: () => void
   onDropOnFolder?: (fileId: string, folderId: string) => void
   isReadOnly?: boolean
+  role?: 'owner' | 'editor' | 'viewer' | null
+  userId?: string | null
+  isGuestAccess?: boolean
 }
 
 /**
@@ -40,9 +44,28 @@ export function DesktopCanvas({
   onContextMenu,
   onArrange,
   onDropOnFolder,
-  isReadOnly = false
+  isReadOnly = false,
+  role = null,
+  userId = null,
+  isGuestAccess = false
 }: DesktopCanvasProps) {
+  // Calculer si l'utilisateur peut uploader (owner ou editor)
+  const canUpload = role === 'owner' || role === 'editor'
   const desktopRef = useRef<HTMLDivElement>(null)
+  const [canvasHeight, setCanvasHeight] = useState(0)
+  
+  // Calculer la hauteur du canvas pour positionner la ligne de séparation
+  useEffect(() => {
+    if (desktopRef.current) {
+      const updateHeight = () => {
+        const height = desktopRef.current?.clientHeight || 0
+        setCanvasHeight(height)
+      }
+      updateHeight()
+      window.addEventListener('resize', updateHeight)
+      return () => window.removeEventListener('resize', updateHeight)
+    }
+  }, [])
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   
@@ -109,8 +132,11 @@ export function DesktopCanvas({
     if (!desktopRef.current) return
     
     const rect = desktopRef.current.getBoundingClientRect()
-    const x = Math.max(0, e.clientX - rect.left - dragOffset.x)
-    const y = Math.max(0, e.clientY - rect.top - dragOffset.y)
+    let x = Math.max(0, e.clientX - rect.left - dragOffset.x)
+    let y = Math.max(0, e.clientY - rect.top - dragOffset.y)
+    
+    // Ajuster la position Y pour éviter la ligne de séparation
+    y = adjustPositionAwayFromSeparator(y, canvasHeight)
     
     // Vérifier si c'est un drag depuis un dossier
     const dragData = e.dataTransfer.getData('application/json')
@@ -136,7 +162,7 @@ export function DesktopCanvas({
       onItemMove(draggedItemId, x, y)
       setDraggedItemId(null)
     }
-  }, [draggedItemId, dragOffset, onItemMove, onDropOnFolder])
+  }, [draggedItemId, dragOffset, onItemMove, onDropOnFolder, canvasHeight])
 
   // Sélection par rectangle
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -234,6 +260,14 @@ export function DesktopCanvas({
     ? getSelectionRect(selectionStart, selectionEnd)
     : null
 
+  // Calculer la position Y de la ligne de séparation
+  const separatorY = canvasHeight * PRIVATE_ZONE_THRESHOLD
+  
+  // Filtrer les items pour les guests (cacher la zone privée)
+  const visibleItems = isGuestAccess 
+    ? items.filter(item => item.y < separatorY)
+    : items
+
   return (
     <main className="bg-[#0a0a0a] overflow-auto custom-scrollbar relative">
       {/* Header sticky */}
@@ -248,7 +282,7 @@ export function DesktopCanvas({
             <LayoutGrid className="w-4 h-4 mr-2" />
             Grid
           </Button>
-          {!isReadOnly && (
+          {canUpload && (
             <Button
               size="sm"
               onClick={onUpload}
@@ -264,6 +298,7 @@ export function DesktopCanvas({
       {/* Desktop Grid avec background */}
       <div
         ref={desktopRef}
+        data-canvas="true"
         onClick={handleCanvasClick}
         onContextMenu={handleCanvasContextMenu}
         onMouseDown={handleMouseDown}
@@ -275,8 +310,40 @@ export function DesktopCanvas({
           isSelecting && "cursor-crosshair"
         )}
       >
-        {/* Afficher les icônes */}
-        {items.map((item) => (
+        {/* Zone privée - Background différent (seulement visible pour org members) */}
+        {!isGuestAccess && canvasHeight > 0 && (
+          <div
+            className="absolute left-0 right-0 bg-[#111111] pointer-events-none"
+            style={{
+              top: `${separatorY}px`,
+              bottom: 0
+            }}
+          />
+        )}
+        
+        {/* Ligne de séparation (seulement visible pour org members) */}
+        {!isGuestAccess && canvasHeight > 0 && (
+          <>
+            {/* Ligne de séparation principale */}
+            <div
+              className="absolute left-0 right-0 border-t-2 border-dashed border-gray-700 pointer-events-none z-10"
+              style={{ top: `${separatorY}px` }}
+            />
+            
+            {/* Badge "Zone Privée" */}
+            <div
+              className="absolute left-8 bg-red-500/20 border border-red-500/50 rounded-md px-3 py-1.5 flex items-center gap-2 pointer-events-none z-10"
+              style={{ top: `${separatorY + 16}px` }}
+            >
+              <span className="text-red-400 text-sm">🔒</span>
+              <span className="text-red-400 text-xs font-bold uppercase tracking-wide">Zone Privée</span>
+              <span className="text-red-400/60 text-xs">Visible uniquement par votre organisation</span>
+            </div>
+          </>
+        )}
+        
+        {/* Afficher les icônes (filtrées pour les guests) */}
+        {visibleItems.map((item) => (
           <DesktopIcon
             key={item.id}
             item={item}

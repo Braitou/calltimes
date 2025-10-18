@@ -74,8 +74,14 @@ export async function middleware(req: NextRequest) {
     '/_next',
     '/api',
     '/favicon',
-    '/auth/no-access'
+    '/auth/no-access',
+    '/legal/', // Pages légales (privacy, terms, cookies)
   ]
+
+  // Landing page (racine uniquement)
+  if (path === '/') {
+    return res
+  }
 
   if (publicRoutes.some(route => path.startsWith(route))) {
     return res

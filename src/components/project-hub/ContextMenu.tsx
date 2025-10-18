@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { Edit2, Trash2, FolderOpen, Download, Grid3x3 } from 'lucide-react'
 import { DesktopItem } from '@/types/project-hub'
 import { cn } from '@/lib/utils'
+import { useFileOwnership } from '@/hooks/useUserAccess'
 
 interface ContextMenuProps {
   item?: DesktopItem // Optionnel pour le canvas
@@ -15,6 +16,8 @@ interface ContextMenuProps {
   onDownload?: () => void
   onArrange?: () => void // Nouvelle action pour ranger
   isReadOnly?: boolean
+  role?: 'owner' | 'editor' | 'viewer' | null
+  userId?: string | null
 }
 
 /**
@@ -29,9 +32,15 @@ export function ContextMenu({
   onOpen,
   onDownload,
   onArrange,
-  isReadOnly = false
+  isReadOnly = false,
+  role = null,
+  userId = null
 }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
+  
+  // Vérifier si l'utilisateur peut modifier/supprimer cet item
+  const uploadedBy = item?.type === 'file' ? item.data?.uploaded_by : item?.type === 'folder' ? item.data?.created_by : null
+  const { canModify, canDelete } = useFileOwnership(userId, uploadedBy, role)
 
   // Fermer au click outside
   useEffect(() => {
@@ -78,8 +87,8 @@ export function ContextMenu({
       })
     }
 
-    // Renommer (tous les types) - Désactivé en lecture seule
-    if (onRename && !isReadOnly) {
+    // Renommer - Owners peuvent tout renommer, Editors seulement leurs propres fichiers
+    if (onRename && canModify) {
       menuItems.push({
         icon: Edit2,
         label: 'Renommer',
@@ -87,7 +96,7 @@ export function ContextMenu({
       })
     }
 
-    // Télécharger (fichiers uniquement)
+    // Télécharger (fichiers uniquement) - Tout le monde peut télécharger
     if (item.type === 'file' && onDownload) {
       menuItems.push({
         icon: Download,
@@ -96,8 +105,8 @@ export function ContextMenu({
       })
     }
 
-    // Séparateur + Supprimer - Désactivé en lecture seule
-    if (onDelete && !isReadOnly) {
+    // Séparateur + Supprimer - Owners peuvent tout supprimer, Editors seulement leurs propres fichiers
+    if (onDelete && canDelete) {
       menuItems.push({
         separator: true
       })

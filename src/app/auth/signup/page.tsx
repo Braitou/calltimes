@@ -1,11 +1,12 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { acceptProjectInvitation } from '@/lib/services/invitations'
 import Link from 'next/link'
 
 export default function SignupPage() {
@@ -15,6 +16,14 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isInvitation = searchParams.get('invitation') === 'true'
+
+  useEffect(() => {
+    if (isInvitation) {
+      setMessage('Créez un compte pour accepter l\'invitation au projet')
+    }
+  }, [isInvitation])
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,12 +46,33 @@ export default function SignupPage() {
       } else if (data.user) {
         console.log('[SIGNUP] Signup data:', data)
         
+        // Vérifier s'il y a une invitation en attente
+        const pendingToken = sessionStorage.getItem('pending_invitation_token')
+        
         if (data.session) {
-          setMessage('Compte cree et connecte ! Redirection vers dashboard...')
-          // NAVIGATION FORCEE vers dashboard
-          setTimeout(() => {
-            window.location.href = '/dashboard'
-          }, 1000)
+          if (pendingToken) {
+            console.log('🎫 Pending invitation found after signup, accepting...')
+            setMessage('Acceptation de l\'invitation...')
+            
+            // Accepter l'invitation
+            const result = await acceptProjectInvitation(pendingToken)
+            
+            // Nettoyer le sessionStorage
+            sessionStorage.removeItem('pending_invitation_token')
+            
+            if (result.success && result.projectId) {
+              console.log('✅ Invitation accepted, redirecting to project:', result.projectId)
+              window.location.href = `/projects/${result.projectId}`
+            } else {
+              console.error('❌ Failed to accept invitation:', result.error)
+              window.location.href = '/dashboard'
+            }
+          } else {
+            setMessage('Compte cree et connecte ! Redirection vers dashboard...')
+            setTimeout(() => {
+              window.location.href = '/dashboard'
+            }, 1000)
+          }
         } else {
           // Auto-signin si pas de session
           setMessage('Compte cree, connexion automatique...')

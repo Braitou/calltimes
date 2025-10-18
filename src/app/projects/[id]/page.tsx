@@ -33,7 +33,7 @@ export default function ProjectHubPage() {
   const projectId = params.id as string
   
   // Permissions utilisateur
-  const { canModify, isReadOnly, isGuestAccess, isLoading: permissionsLoading } = useProjectAccess(projectId)
+  const { canModify, isReadOnly, isGuestAccess, role, userId, isOwner, isEditor, isViewer, isLoading: permissionsLoading } = useProjectAccess(projectId)
 
   // État
   const [project, setProject] = useState<any>(null)
@@ -45,7 +45,7 @@ export default function ProjectHubPage() {
   const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [openFolder, setOpenFolder] = useState<{ folder: ProjectFolder; position: { x: number; y: number } } | null>(null)
-  const [contextMenu, setContextMenu] = useState<{ item?: DesktopItem; position: { x: number; y: number } } | null>(null) // item optionnel pour canvas
+  const [contextMenu, setContextMenu] = useState<{ item?: DesktopItem; position: { x: number; y: number }; canvasY?: number; canvasHeight?: number } | null>(null) // item optionnel pour canvas
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [fullscreenPreview, setFullscreenPreview] = useState<DesktopItem | null>(null)
@@ -60,6 +60,79 @@ export default function ProjectHubPage() {
     loadProjectData()
   }, [projectId])
 
+  // 🔄 REALTIME : Écouter les changements en temps réel
+  useEffect(() => {
+    if (!projectId) return
+
+    console.log('🔄 Setting up Realtime subscriptions for project:', projectId)
+
+    const { createSupabaseClient } = require('@/lib/supabase/client')
+    const supabase = createSupabaseClient()
+
+    // Écouter les changements sur project_files
+    const filesChannel = supabase
+      .channel(`project-files-${projectId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'project_files',
+          filter: `project_id=eq.${projectId}`
+        },
+        (payload) => {
+          console.log('🔄 Realtime: project_files changed', payload)
+          // Recharger les données SANS loading screen
+          loadProjectData(true)
+        }
+      )
+      .subscribe()
+
+    // Écouter les changements sur project_folders
+    const foldersChannel = supabase
+      .channel(`project-folders-${projectId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'project_folders',
+          filter: `project_id=eq.${projectId}`
+        },
+        (payload) => {
+          console.log('🔄 Realtime: project_folders changed', payload)
+          loadProjectData(true)
+        }
+      )
+      .subscribe()
+
+    // Écouter les changements sur call_sheets
+    const callSheetsChannel = supabase
+      .channel(`call-sheets-${projectId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'call_sheets',
+          filter: `project_id=eq.${projectId}`
+        },
+        (payload) => {
+          console.log('🔄 Realtime: call_sheets changed', payload)
+          loadProjectData(true)
+        }
+      )
+      .subscribe()
+
+    // Cleanup
+    return () => {
+      console.log('🔄 Cleaning up Realtime subscriptions')
+      supabase.removeChannel(filesChannel)
+      supabase.removeChannel(foldersChannel)
+      supabase.removeChannel(callSheetsChannel)
+    }
+  }, [projectId])
+
   // Écouter la touche Suppr pour supprimer les éléments sélectionnés
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -72,9 +145,31 @@ export default function ProjectHubPage() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [selectedItemIds, desktopItems])
 
-  const loadProjectData = async () => {
-    setIsLoading(true)
+  const loadProjectData = async (skipLoading = false) => {
+    if (!skipLoading) {
+      setIsLoading(true)
+    }
     try {
+      // 🔐 VALIDATION TOKEN GUEST : Vérifier si le token est toujours valide
+      const guestToken = localStorage.getItem(`guest_token_${projectId}`)
+      if (guestToken) {
+        console.log('🔍 Validating guest token on project load...')
+        const { validateGuestInvitation } = await import('@/lib/services/invitations')
+        const validation = await validateGuestInvitation(guestToken)
+        
+        if (!validation.success) {
+          console.log('❌ Guest token invalid or revoked, cleaning localStorage...')
+          // Token révoqué ou expiré → nettoyer localStorage
+          localStorage.removeItem(`guest_token_${projectId}`)
+          localStorage.removeItem(`guest_role_${projectId}`)
+          
+          toast.error('Votre accès à ce projet a été révoqué')
+          router.push('/auth/no-access?reason=revoked')
+          return
+        }
+        console.log('✅ Guest token valid')
+      }
+
       // 1. Charger le projet
       const projectResult = await getProjectById(projectId)
       if (!projectResult.success || !projectResult.data) {
@@ -112,14 +207,29 @@ export default function ProjectHubPage() {
 
       // 5. Charger les membres
       const membersResult = await getProjectMembers(projectId)
+      
+      // Récupérer le nom du guest actuel depuis localStorage (si c'est un guest)
+      const currentGuestName = localStorage.getItem(`guest_name_${projectId}`)
+      const currentGuestToken = localStorage.getItem(`guest_token_${projectId}`)
+      
       const mappedMembers: TeamMember[] = membersResult.success 
-        ? membersResult.data.map(m => ({
-            id: m.id,
-            name: m.user_id || m.email,
-            email: m.email,
-            initials: getInitials(m.user_id || m.email),
-            role: m.role as 'owner' | 'editor' | 'viewer'
-          }))
+        ? membersResult.data.map(m => {
+            // Si c'est un guest ET qu'on a un nom stocké pour ce projet, l'utiliser
+            // On identifie le guest actuel par le fait qu'il a un token stocké et que le membre n'est pas owner
+            const isCurrentGuest = currentGuestToken && currentGuestName && m.role !== 'owner'
+            
+            const displayName = isCurrentGuest 
+              ? currentGuestName 
+              : m.user_id || m.email
+
+            return {
+              id: m.id,
+              name: displayName,
+              email: m.email,
+              initials: getInitials(displayName),
+              role: m.role as 'owner' | 'editor' | 'viewer'
+            }
+          })
         : []
       setTeamMembers(mappedMembers)
 
@@ -208,6 +318,25 @@ export default function ProjectHubPage() {
     // Désactiver si lecture seule
     if (isReadOnly) return
     
+    // Vérifier si l'item est déplacé vers la zone privée
+    const item = desktopItems.find(i => i.id === itemId)
+    if (item && !isGuestAccess) {
+      const { isInPrivateZone } = require('@/lib/constants/canvas')
+      const wasInPrivateZone = isInPrivateZone(item.y, 1000) // Hauteur estimée
+      const isNowInPrivateZone = isInPrivateZone(y, 1000)
+      
+      // Toast si déplacement vers la zone privée
+      if (!wasInPrivateZone && isNowInPrivateZone) {
+        toast.success('📁 Fichier déplacé vers la zone privée', {
+          description: 'Seuls les membres de votre organisation peuvent le voir'
+        })
+      } else if (wasInPrivateZone && !isNowInPrivateZone) {
+        toast.info('📁 Fichier déplacé vers la zone partagée', {
+          description: 'Tous les invités peuvent maintenant le voir'
+        })
+      }
+    }
+    
     // Mise à jour optimiste
     setDesktopItems(prev => prev.map(item =>
       item.id === itemId ? { ...item, x, y } : item
@@ -220,7 +349,7 @@ export default function ProjectHubPage() {
     savePositionTimeoutRef.current = setTimeout(() => {
       saveItemPosition(itemId, x, y)
     }, 500)
-  }, [saveItemPosition, isReadOnly])
+  }, [saveItemPosition, isReadOnly, desktopItems, isGuestAccess])
 
   // Handler pour double-click (ouvrir dossier ou fichier)
   const handleItemDoubleClick = useCallback((item: DesktopItem) => {
@@ -241,9 +370,22 @@ export default function ProjectHubPage() {
 
   // Handler pour context menu
   const handleContextMenu = useCallback((e: React.MouseEvent, item?: DesktopItem) => {
+    // Calculer la position Y relative au canvas (en tenant compte du padding)
+    const target = e.currentTarget as HTMLElement
+    const canvasElement = target.closest('[data-canvas]') || target
+    const rect = canvasElement.getBoundingClientRect()
+    
+    // Soustraire le padding du canvas (p-8 = 32px)
+    const canvasY = e.clientY - rect.top - 32
+    
+    // Stocker aussi la hauteur réelle du canvas
+    const canvasHeight = rect.height - 64 // Soustraire le padding haut et bas (32px * 2)
+    
     setContextMenu({
       item,
-      position: { x: e.clientX, y: e.clientY }
+      position: { x: e.clientX, y: e.clientY },
+      canvasY,
+      canvasHeight
     })
   }, [])
   
@@ -305,8 +447,10 @@ export default function ProjectHubPage() {
 
   const handleUploadComplete = (uploadedFiles: any[]) => {
     toast.success(`${uploadedFiles.length} fichier${uploadedFiles.length > 1 ? 's' : ''} uploadé${uploadedFiles.length > 1 ? 's' : ''}`)
-    // Recharger les données du projet pour afficher les nouveaux fichiers
-    loadProjectData()
+    // Fermer le modal automatiquement
+    setShowUploadModal(false)
+    // Recharger les données du projet pour afficher les nouveaux fichiers (sans loading)
+    loadProjectData(true)
   }
 
   const handleNewFolder = async () => {
@@ -317,12 +461,17 @@ export default function ProjectHubPage() {
     }
     
     try {
+      // Calculer une position libre pour le nouveau dossier
+      const { findFreePositionForFolder } = await import('@/lib/utils/position-helpers')
+      const existingPositions = desktopItems.map(item => ({ x: item.x, y: item.y }))
+      const { x, y } = findFreePositionForFolder(existingPositions)
+
       // Créer immédiatement avec un nom par défaut
       const result = await createFolder({
         project_id: projectId,
         name: 'Nouveau dossier',
-        position_x: 50,
-        position_y: 50
+        position_x: x,
+        position_y: y
       })
 
       if (result.success && result.data) {
@@ -552,10 +701,33 @@ export default function ProjectHubPage() {
     }
   }
 
-  // Ranger automatiquement les éléments
-  const handleArrangeItems = async () => {
+  // Ranger automatiquement les éléments (selon la zone cliquée)
+  const handleArrangeItems = async (clickY?: number, realCanvasHeight?: number) => {
     try {
-      const arrangedItems = autoArrangeItems(desktopItems, 120, 50, 50, 6)
+      const { isInPrivateZone } = await import('@/lib/constants/canvas')
+      const canvasHeight = realCanvasHeight || 1000 // Utiliser la vraie hauteur si disponible
+      
+      // Déterminer dans quelle zone on a cliqué
+      const isPrivateZoneClick = clickY !== undefined && isInPrivateZone(clickY, canvasHeight)
+      
+      // Filtrer les items selon la zone
+      const itemsToArrange = desktopItems.filter(item => {
+        const itemIsInPrivateZone = isInPrivateZone(item.y, canvasHeight)
+        return itemIsInPrivateZone === isPrivateZoneClick
+      })
+      
+      if (itemsToArrange.length === 0) {
+        toast.info('Aucun élément à ranger dans cette zone')
+        return
+      }
+      
+      // Calculer la position Y de départ selon la zone
+      const startY = isPrivateZoneClick 
+        ? canvasHeight * 0.6 + 120 // Zone privée : 120px sous la ligne
+        : 50 // Zone partagée : en haut
+      
+      // Ranger uniquement les items de cette zone
+      const arrangedItems = autoArrangeItems(itemsToArrange, 120, 50, startY, 6)
       
       // Sauvegarder les nouvelles positions
       const updatePromises = arrangedItems.map(async (item) => {
@@ -563,15 +735,27 @@ export default function ProjectHubPage() {
           return await updateFolderPosition(item.id, item.x, item.y)
         } else if (item.type === 'file') {
           return await updateFilePosition(item.id, item.x, item.y)
+        } else if (item.type === 'callsheet') {
+          // Mettre à jour la position du call sheet
+          const { updateCallSheetPosition } = await import('@/lib/services/call-sheets')
+          return await updateCallSheetPosition(item.id, item.x, item.y)
         }
         return { success: true }
       })
       
       await Promise.all(updatePromises)
       
-      // Mettre à jour l'affichage
-      setDesktopItems(arrangedItems)
-      toast.success('Éléments rangés automatiquement')
+      // Mettre à jour l'affichage (merger avec les items non-rangés)
+      setDesktopItems(prev => {
+        const unchangedItems = prev.filter(item => {
+          const itemIsInPrivateZone = isInPrivateZone(item.y, canvasHeight)
+          return itemIsInPrivateZone !== isPrivateZoneClick
+        })
+        return [...unchangedItems, ...arrangedItems]
+      })
+      
+      const zoneName = isPrivateZoneClick ? 'zone privée' : 'zone partagée'
+      toast.success(`Éléments rangés dans la ${zoneName}`)
     } catch (error) {
       console.error('Error arranging items:', error)
       toast.error('Erreur lors du rangement')
@@ -644,13 +828,26 @@ export default function ProjectHubPage() {
         ])
         
         if (membersResult.success) {
-          const mappedMembers: TeamMember[] = membersResult.data.map(m => ({
-            id: m.id,
-            name: m.user_id || m.email,
-            email: m.email,
-            initials: getInitials(m.user_id || m.email),
-            role: m.role as 'owner' | 'editor' | 'viewer'
-          }))
+          // Récupérer le nom du guest actuel depuis localStorage (si c'est un guest)
+          const currentGuestName = localStorage.getItem(`guest_name_${projectId}`)
+          const currentGuestToken = localStorage.getItem(`guest_token_${projectId}`)
+          
+          const mappedMembers: TeamMember[] = membersResult.data.map(m => {
+            // Si c'est un guest ET qu'on a un nom stocké pour ce projet, l'utiliser
+            const isCurrentGuest = currentGuestToken && currentGuestName && m.role !== 'owner'
+            
+            const displayName = isCurrentGuest 
+              ? currentGuestName 
+              : m.user_id || m.email
+
+            return {
+              id: m.id,
+              name: displayName,
+              email: m.email,
+              initials: getInitials(displayName),
+              role: m.role as 'owner' | 'editor' | 'viewer'
+            }
+          })
           setTeamMembers(mappedMembers)
         }
         
@@ -759,6 +956,7 @@ export default function ProjectHubPage() {
           onUploadFiles={handleUploadFiles}
           onNewFolder={handleNewFolder}
           isReadOnly={isReadOnly}
+          role={role}
         />
 
         {/* Zone centrale - Desktop Canvas */}
@@ -781,6 +979,9 @@ export default function ProjectHubPage() {
             onArrange={handleArrangeItems}
             onDropOnFolder={handleDropOnFolder}
             isReadOnly={isReadOnly}
+            role={role}
+            userId={userId}
+            isGuestAccess={isGuestAccess}
           />
 
           {/* Fenêtre flottante du dossier ouvert */}
@@ -835,10 +1036,12 @@ export default function ProjectHubPage() {
                 setContextMenu(null)
               } : undefined}
               onArrange={!contextMenu.item ? () => {
-                handleArrangeItems()
+                handleArrangeItems(contextMenu.canvasY, contextMenu.canvasHeight)
                 setContextMenu(null)
               } : undefined}
               isReadOnly={isReadOnly}
+              role={role}
+              userId={userId}
             />
           )}
 
@@ -864,6 +1067,8 @@ export default function ProjectHubPage() {
           onRemoveMember={handleRemoveMember}
           onOpenFullscreen={handleOpenFullscreen}
           isReadOnly={isReadOnly}
+          role={role}
+          userId={userId}
         />
       </div>
 

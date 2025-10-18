@@ -131,3 +131,57 @@ export async function updateFolderPosition(folderId: string, x: number, y: numbe
   return updateFolder(folderId, { position_x: x, position_y: y })
 }
 
+/**
+ * Change le statut privé d'un dossier
+ */
+export async function toggleFolderPrivacy(folderId: string, isPrivate: boolean): Promise<{ success: boolean; data?: ProjectFolder; error?: string }> {
+  try {
+    const supabase = createSupabaseClient()
+
+    // Vérifier que l'utilisateur est un membre de l'organisation (pas un guest)
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return { success: false, error: 'User not authenticated' }
+    }
+
+    // Vérifier que l'utilisateur est membre de l'organisation
+    const { data: folder } = await supabase
+      .from('project_folders')
+      .select('project_id, organization_id')
+      .eq('id', folderId)
+      .single()
+
+    if (!folder) {
+      return { success: false, error: 'Folder not found' }
+    }
+
+    const { data: membership } = await supabase
+      .from('memberships')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('organization_id', folder.organization_id)
+      .single()
+
+    if (!membership) {
+      return { success: false, error: 'Only organization members can change folder privacy' }
+    }
+
+    // Mettre à jour le statut privé
+    const { data, error } = await supabase
+      .from('project_folders')
+      .update({ is_private: isPrivate })
+      .eq('id', folderId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error updating folder privacy:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error updating folder privacy:', error)
+    return { success: false, error: 'An unexpected error occurred' }
+  }
+}

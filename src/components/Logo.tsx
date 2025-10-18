@@ -1,43 +1,17 @@
 /**
  * Logo Call Times - Identité typographique
- * CALL (Inter Black 900) + Times (Libre Baskerville Italic)
+ * CALL (Inter Black 900) + times (Libre Baskerville Italic lowercase)
  */
 
 interface LogoProps {
-  size?: 'small' | 'medium' | 'large'
-  variant?: 'vertical' | 'horizontal'
+  className?: string
 }
 
-export function Logo({ size = 'medium', variant = 'vertical' }: LogoProps) {
-  const sizes = {
-    small: { 
-      call: 'text-2xl', 
-      times: 'text-[1.65rem]' 
-    },
-    medium: { 
-      call: 'text-5xl', 
-      times: 'text-[3.3rem]' 
-    },
-    large: { 
-      call: 'text-[5rem]', 
-      times: 'text-[5.5rem]' 
-    },
-  }
-
-  if (variant === 'horizontal') {
-    return (
-      <div className="inline-flex items-baseline gap-2">
-        <div className={`logo-call ${sizes[size].call}`}>CALL</div>
-        <div className={`logo-times ${sizes[size].times}`}>Times</div>
-      </div>
-    )
-  }
-
-  // Vertical (default)
+export function Logo({ className = '' }: LogoProps) {
   return (
-    <div className="inline-block">
-      <div className={`logo-call ${sizes[size].call}`}>CALL</div>
-      <div className={`logo-times ${sizes[size].times}`}>Times</div>
+    <div className={`inline-flex items-baseline gap-[0.15em] ${className}`}>
+      <span className="logo-call text-[1em]">CALL</span>
+      <span className="logo-times text-[1.1em]">times</span>
     </div>
   )
 }
